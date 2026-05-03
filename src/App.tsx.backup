@@ -1,0 +1,408 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Upload, 
+  Image as ImageIcon, 
+  Wand2, 
+  Download, 
+  RotateCcw, 
+  Loader2, 
+  Plus, 
+  Sparkles,
+  ArrowRight
+} from 'lucide-react';
+
+interface ImageState {
+  data: string;
+  mimeType: string;
+}
+
+import logoEye from './assets/images/logo_eye_clean.png';
+import logoTh3rdAI from './assets/images/logo_th3rdai_clean.png';
+
+export default function App() {
+  const [originalImage, setOriginalImage] = useState<ImageState | null>(null);
+  const [editedImage, setEditedImage] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload a valid image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      const [header, data] = base64.split(',');
+      const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+      setOriginalImage({ data, mimeType });
+      setEditedImage(null);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEdit = async () => {
+    if (!originalImage || !prompt.trim()) return;
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // Call the backend API instead of using GoogleGenAI directly
+      const response = await fetch('http://localhost:3001/api/generate', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: {
+            data: originalImage.data,
+            mimeType: originalImage.mimeType,
+          },
+          prompt: prompt,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to communicate with the backend');
+      }
+
+      const result = await response.json();
+
+      if (result.image) {
+        setEditedImage(`data:${result.image.mimeType};base64,${result.image.data}`);
+      } else if (result.error) {
+        setError(result.error);
+      } else {
+        setError('Failed to generate the edited image. Please try a different prompt.');
+      }
+    } catch (err: any) {
+      console.error('Error editing image:', err);
+      setError('An error occurred while communicating with the AI. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const reset = () => {
+    setOriginalImage(null);
+    setEditedImage(null);
+    setPrompt('');
+    setError(null);
+  };
+
+  const downloadImage = () => {
+    if (!editedImage) return;
+    const link = document.createElement('a');
+    link.href = editedImage;
+    link.download = `visionedit-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0F0F0F] text-[#E0E0E0] font-sans selection:bg-white selection:text-black">
+      {/* Header */}
+      <header className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-50 flex items-center px-6">
+        <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <img src={logoEye} className="w-6 h-6 object-contain" alt="Th3rdAI" />
+            <span className="text-[10px] font-medium tracking-[0.2em] uppercase opacity-50">Th3rdAI Vision Studio — v2.2</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            {originalImage && (
+              <button 
+                onClick={reset}
+                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Reset Workspace
+              </button>
+            )}
+            {editedImage && (
+              <button 
+                onClick={downloadImage}
+                className="px-4 py-1.5 bg-white text-black text-[10px] font-bold uppercase tracking-widest rounded hover:bg-neutral-200 transition-colors"
+              >
+                Export Image
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        <AnimatePresence mode="wait">
+          {!originalImage ? (
+            <motion.div 
+              key="upload"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="max-w-2xl mx-auto text-center"
+            >
+              <div className="mb-12">
+                <div className="flex justify-center mb-8">
+                  <img src={logoTh3rdAI} className="w-48 h-auto opacity-80" alt="Th3rdAI Logo" />
+                </div>
+                <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-4 text-white/40">
+                  Neural Imaging Engine
+                </h2>
+                <h3 className="text-4xl font-light mb-6 tracking-tight text-white">
+                  Transform any image with <span className="italic font-serif">words</span>
+                </h3>
+              </div>
+
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="group relative border border-white/10 rounded-lg p-20 transition-all cursor-pointer bg-[#161616] hover:bg-white/[0.03]"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 border border-white/10 rounded flex items-center justify-center mb-6 text-white/50 group-hover:text-white transition-colors">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Import Media</p>
+                  <p className="text-[10px] text-white/30 uppercase tracking-widest">DRAG AND DROP OR CLICK TO BROWSE</p>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden" 
+                    accept="image/*"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-12 text-center">
+                {[
+                  { title: "Analysis", desc: "NEURAL SCENE PARSING" },
+                  { title: "Precision", desc: "PIXEL-LEVEL CONTROL" },
+                  { title: "Velocity", desc: "REAL-TIME SYNTHESIS" }
+                ].map((feature, i) => (
+                  <div key={i} className="space-y-3">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">{feature.title}</h3>
+                    <p className="text-[10px] text-white/20 tracking-widest font-mono">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="editor"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 items-start"
+            >
+              {/* Controls Sidebar */}
+              <div className="space-y-8 lg:sticky lg:top-24">
+                <div className="bg-[#161616] border border-white/10 rounded p-6">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-6">Adjustment Panel</h3>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-3 block">Natural Language Prompt</span>
+                      <textarea 
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="DEFINE TRANSFORMATION..."
+                        className="w-full h-40 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/10 focus:outline-none focus:border-white/30 transition-all resize-none uppercase tracking-wider"
+                      />
+                    </div>
+
+                    {error && (
+                      <div className="p-3 bg-red-500/5 border border-red-500/20 rounded text-[10px] uppercase font-bold tracking-widest text-red-500/60">
+                        {error}
+                      </div>
+                    )}
+
+                    <button 
+                      onClick={handleEdit}
+                      disabled={isProcessing || !prompt.trim()}
+                      className="w-full py-3 bg-white text-black disabled:opacity-20 rounded text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Process Synthesis"
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="mt-8 pt-8 border-t border-white/5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mb-4">Format Migration</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: "To PNG", prompt: "Convert this image to PNG format" },
+                        { label: "To JPG", prompt: "Convert this image to JPEG format" },
+                        { label: "To SVG", prompt: "Convert this image to SVG vector format" },
+                        { label: "To ICO", prompt: "Convert this image to ICO icon format" }
+                      ].map((format, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setPrompt(format.prompt)}
+                          className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded text-[10px] font-medium uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors"
+                        >
+                          {format.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-8 border-t border-white/5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mb-4">Preset Macros</h3>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { label: "Future Vibe", prompt: "Add a futuristic, high-tech vibe with neon accents" },
+                        { label: "Vintage Film", prompt: "Make it look like a vintage film photograph with grain and warm tones" },
+                        { label: "Cinematic", prompt: "Apply dramatic cinematic lighting and high contrast" },
+                        { label: "Replace Sky", prompt: "Replace the sky with a dramatic starry galaxy or sunset" },
+                        { label: "Transparency", prompt: "Remove the background completely and make it transparent. Ensure the output is an RGBA file with a true alpha channel. DO NOT include any checkerboard or grid pattern as pixels." },
+                        { label: "3D Depth", prompt: "Convert this image to have a high-quality 3D depth effect with realistic shading and volume" },
+                        { label: "Cartoonize", prompt: "Convert this image into a clean 2D cartoon illustration style" }
+                      ].map((hint, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setPrompt(hint.prompt)}
+                          className="w-full px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded text-[10px] font-medium uppercase tracking-widest text-white/40 hover:text-white/80 text-left transition-colors"
+                        >
+                          {hint.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-[#161616] border border-white/10 rounded p-4 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-[#0A0A0A] border border-white/10 rounded overflow-hidden flex-shrink-0">
+                    <img 
+                      src={`data:${originalImage.mimeType};base64,${originalImage.data}`} 
+                      alt="Source" 
+                      className="w-full h-full object-cover grayscale opacity-50"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-widest truncate">Input Asset</p>
+                    <p className="text-[10px] text-white/20 uppercase tracking-widest font-mono">READY</p>
+                  </div>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2 hover:bg-white/5 rounded transition-colors text-white/40"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <input 
+                      type="file" 
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden" 
+                      accept="image/*"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Canvas Area */}
+              <div className="flex flex-col space-y-4">
+                <div className="relative bg-[#0A0A0A] border border-white/10 rounded aspect-[4/3] flex items-center justify-center p-12 overflow-hidden overflow-y-auto">
+                   {/* Background dots/grid pattern if needed or just plain dark */}
+                   <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+
+                  <AnimatePresence mode="wait">
+                    {isProcessing ? (
+                      <motion.div 
+                        key="loader"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex flex-col items-center"
+                      >
+                        <div className="flex space-x-1 mb-4">
+                          <div className="w-1 h-1 bg-white/40 animate-pulse"></div>
+                          <div className="w-1 h-1 bg-white/40 animate-pulse delay-75"></div>
+                          <div className="w-1 h-1 bg-white/40 animate-pulse delay-150"></div>
+                        </div>
+                        <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-white/40">Synthesizing Layers</p>
+                      </motion.div>
+                    ) : (
+                      <motion.div 
+                        key={editedImage ? 'edited' : 'original'}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="relative shadow-2xl"
+                      >
+                        <div className="relative min-w-[200px] min-h-[150px] max-w-full">
+                          <img 
+                            src={editedImage || `data:${originalImage.mimeType};base64,${originalImage.data}`} 
+                            alt="Preview" 
+                            className={`max-w-full h-auto border border-white/5 transition-all duration-700 ${!editedImage ? 'filter grayscale-[0.5] opacity-80' : ''}`}
+                            referrerPolicy="no-referrer"
+                          />
+                          
+                          {/* Viewfinder UI */}
+                          <div className="absolute -top-2 -left-2 border-t border-l border-white/30 w-6 h-6"></div>
+                          <div className="absolute -top-2 -right-2 border-t border-r border-white/30 w-6 h-6"></div>
+                          <div className="absolute -bottom-2 -left-2 border-b border-l border-white/30 w-6 h-6"></div>
+                          <div className="absolute -bottom-2 -right-2 border-b border-r border-white/30 w-6 h-6"></div>
+                        </div>
+                        
+                        <div className="absolute -bottom-8 left-0 text-[10px] text-white/30 font-mono tracking-widest uppercase">
+                          {editedImage ? 'STATE: SYNTHESIZED' : 'STATE: RAW INPUT'} | FORMAT: {originalImage.mimeType.split('/')[1].toUpperCase()}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                
+                <div className="flex justify-between items-center px-2">
+                  <div className="flex space-x-6">
+                    <div className="space-y-1">
+                      <span className="text-[9px] uppercase tracking-tighter text-white/20 font-bold">Engine</span>
+                      <p className="text-[10px] uppercase font-mono text-white/40 tracking-wider">Gemini 2.5 Flash Image</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] uppercase tracking-tighter text-white/20 font-bold">Latency</span>
+                      <p className="text-[10px] uppercase font-mono text-white/40 tracking-wider">{isProcessing ? 'Calculating...' : '4.2s (avg)'}</p>
+                    </div>
+                  </div>
+                  {editedImage && (
+                    <div className="px-3 py-1 bg-white/5 border border-white/10 rounded flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></div>
+                      <span className="text-[9px] uppercase font-bold tracking-widest text-white/60">Export Ready</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+      
+      <footer className="mt-auto border-t border-white/5 py-10 opacity-30">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+             <img src={logoEye} className="w-4 h-4 grayscale" alt="Logo" />
+             <div className="text-[10px] font-bold uppercase tracking-[0.2em]">TH3RDAI VISION SYSTEM — 2026</div>
+          </div>
+          <div className="flex space-x-8">
+            <span className="text-[10px] tracking-widest font-mono uppercase">Status: Online</span>
+            <span className="text-[10px] tracking-widest font-mono uppercase">Region: US-WEST</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,0 +1,19 @@
+{
+  "mode": "interactive",
+  "granularity": "standard",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "auto_advance": false
+  },
+  "planning": {
+    "commit_docs": true,
+    "search_gitignored": false
+  },
+  "gates": {
+    "confirm_project": true,
+    "confirm_phases": true,
+    "execute_next_plan": true
+  }
+}

@@ -1,0 +1,227 @@
+---
+description: Generate Prompt
+---
+
+# Generate Prompt
+
+## Task: $ARGUMENTS
+
+Generate an optimal, XML-structured prompt for the specified task. This command creates well-engineered prompts with built-in ambiguity detection, adaptive reasoning depth, and comprehensive validation.
+
+## Phase 1: Ambiguity Detection
+
+Before generating, check for clarity issues:
+
+### Vague Terms Check
+Look for: "something", "it", "stuff", "things", "maybe", "kind of"
+- If found → Ask for clarification before proceeding
+
+### Missing Context Check
+Verify the request includes:
+- **Context**: What's the background/purpose?
+- **Audience**: Who will use this output?
+- **Output Format**: What format is expected?
+- **Use Case**: Production, prototype, learning?
+
+### Ambiguous Goals Check
+Watch for vague verbs without specifics:
+- "optimize" → Optimize for what? (speed, memory, readability)
+- "improve" → Improve in what way? (performance, UX, maintainability)
+- "fix" → What specific issue needs fixing?
+- "handle" → What specific behavior or edge cases?
+
+**Golden Rule**: Would a colleague with minimal context understand what's being asked?
+
+If ambiguity detected → Ask up to 5 targeted clarifying questions before proceeding.
+
+## Phase 2: Task Analysis
+
+### Complexity Scoring
+Analyze the task to determine complexity:
+
+**Simple** (score < 2):
+- Straightforward, single-file tasks
+- Clear requirements, no research needed
+
+**Moderate** (score 2-3):
+- Multiple considerations
+- Some analysis required
+
+**Complex** (score ≥ 4):
+- Multi-file, cross-cutting concerns
+- Research, design decisions, trade-offs
+- Keywords: analyze, research, design, architect, optimize, evaluate, compare, investigate, comprehensive, refactor, migrate, integrate, coordinate, orchestrate
+
+### Reasoning Depth Selection
+
+**Standard**: Default for simple/moderate tasks
+
+**Deep**: Triggered by:
+- Complex score ≥ 4
+- Phrases: "thoroughly", "deeply", "trade-offs", "best approach", "evaluate options", "design decision", "architecture"
+
+### Flow Type Detection
+
+**Single Prompt**: Cohesive, sequential task (default)
+
+**Multiple Parallel**: Independent sub-tasks
+- Indicators: "and also", "in addition", "separately", numbered lists
+
+**Multiple Sequential**: Dependent sub-tasks
+- Indicators: "then", "after", "once", "before", "depends on", "based on"
+
+## Phase 3: Generate Structured Prompt
+
+Create XML-structured prompt with these sections:
+
+### Required Sections (Always Include)
+
+```xml
+<objective>
+Clear, concise task statement from user request
+</objective>
+
+<context>
+Background information and purpose
+- Project context
+- Why this task matters
+- Relevant constraints
+</context>
+
+<requirements>
+1. Numbered, actionable requirements
+2. Each requirement specific and verifiable
+3. Include technical specifications
+</requirements>
+
+<constraints>
+- **Constraint statement**
+  - *Why:* Explicit reasoning for this constraint
+- **All file paths must be relative (e.g., ./src/)**
+  - *Why:* Ensures portability across environments
+- **Include explicit success criteria**
+  - *Why:* Enables objective verification
+</constraints>
+
+<output>
+Expected deliverables:
+- File locations and formats
+- Structure expectations
+- What "done" looks like
+</output>
+
+<verification>
+- [ ] Checklist item 1
+- [ ] Checklist item 2
+- [ ] All success criteria met
+- [ ] No placeholder values remain
+</verification>
+
+<success_criteria>
+- Measurable criterion 1
+- Measurable criterion 2
+- Output is actionable without original conversation context
+</success_criteria>
+```
+
+### Conditional Sections (Add Based on Analysis)
+
+**For Deep Reasoning** (complexity=complex or deep reasoning triggers):
+```xml
+<implementation>
+Apply thorough analysis: consider trade-offs, edge cases, and justify decisions with WHY explanations.
+</implementation>
+```
+
+**For Research Tasks** (contains "research" or "analyze" with complex score):
+```xml
+<research>
+Conduct thorough research using documentation, codebase context, and best practices before proposing solution.
+</research>
+```
+
+**For Multi-Step Tasks** (flowType != single):
+```xml
+<examples>
+Sub-task breakdown:
+1. [Sub-task name]: [Description]
+2. [Sub-task name]: [Description]
+</examples>
+```
+
+**For Non-Simple Tasks** (complexity != simple):
+```xml
+<validation>
+After implementation, validate against all success criteria. Confirm no regressions or edge cases missed.
+</validation>
+```
+
+## Output
+
+Save as: `PRPs/prompts/{NNN}-{task-name}.md`
+- NNN = sequential 3-digit number
+- task-name = kebab-case summary (max 60 chars)
+
+## Quality Checklist
+
+- [ ] No ambiguity remains (or clarifying questions asked)
+- [ ] Appropriate complexity level assigned
+- [ ] All required XML sections present
+- [ ] Constraints include WHY explanations
+- [ ] Success criteria are measurable
+- [ ] Verification steps are actionable
+- [ ] File paths are relative
+
+## Example Output Structure
+
+```markdown
+<!-- Generated by Prompt Engineer -->
+<!-- Timestamp: ISO-8601 -->
+<!-- File: 001-create-auth-module.md -->
+
+# Create Auth Module
+
+<objective>
+Create a user authentication module with JWT token handling
+</objective>
+
+<context>
+Building a web application requiring secure user login. Must integrate with existing Express.js backend.
+</context>
+
+<requirements>
+1. Implement login/logout endpoints
+2. Generate and validate JWT tokens
+3. Support token refresh mechanism
+4. Add middleware for protected routes
+</requirements>
+
+<constraints>
+- **Use existing bcrypt for password hashing**
+  - *Why:* Maintain consistency with current auth patterns
+- **Tokens expire after 1 hour**
+  - *Why:* Balance security with user experience
+</constraints>
+
+<output>
+Files to create:
+- ./src/auth/controller.ts
+- ./src/auth/middleware.ts
+- ./src/auth/types.ts
+- ./tests/auth.test.ts
+</output>
+
+<verification>
+- [ ] All endpoints return appropriate status codes
+- [ ] Token validation rejects expired/invalid tokens
+- [ ] Tests cover happy path and error cases
+</verification>
+
+<success_criteria>
+- Users can login and receive valid JWT
+- Protected routes reject unauthorized requests
+- Token refresh extends session without re-login
+</success_criteria>
+```
+
+Remember: The goal is creating prompts that enable one-pass implementation success through comprehensive context and clear expectations.

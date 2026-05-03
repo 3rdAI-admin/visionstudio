@@ -1,0 +1,6 @@
+{
+  "name": "VisionEdit AI",
+  "description": "An advanced AI-powered image editing studio that transforms your photos using natural language commands. Powered by Gemini nano banana series.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["image_generation", "image_editing"]
+}
