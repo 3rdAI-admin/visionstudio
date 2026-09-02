@@ -23,7 +23,7 @@ Browser-based image editor and converter that transforms images via natural-lang
 ```
 ┌─────────────────────────────────────┐         ┌──────────────────────┐         ┌────────────────────────────┐
 │ Frontend (Vite + React)             │  POST   │ Backend (Express)    │  HTTPS  │ Google Generative Language │
-│ http://localhost:3000               │────────▶│ http://localhost:3001│────────▶│ gemini-2.5-flash-image     │
+│ http://localhost:3002               │────────▶│ http://localhost:3001│────────▶│ gemini-2.5-flash-image     │
 │                                     │  /api/  │ backend/index.js     │         │ (image edit/convert/gen)   │
 │ + @imgly/background-removal         │ generate└──────────────────────┘         └────────────────────────────┘
 │   (client-side WASM, ~5MB model)    │
@@ -83,12 +83,14 @@ Two processes, two terminals:
 cd backend && node index.js
 # → "Backend running at http://localhost:3001"
 
-# Terminal 2 — frontend (port 3000)
+# Terminal 2 — frontend (port 3002)
 npm run dev
 # → "VITE v6.4.2 ready"
 ```
 
-Open <http://localhost:3000>.
+Or use `./startup.sh start` to launch both as background processes (see `./startup.sh status`/`stop`/`restart`); it defaults to the same ports and can be reconfigured via the app's Settings UI.
+
+Open <http://localhost:3002>.
 
 ## API contract
 
@@ -114,7 +116,7 @@ Open <http://localhost:3000>.
 { "error": "human-readable message from Google or local validation" }
 ```
 
-CORS is restricted to `http://localhost:3000`. Body limit is 25 MB so typical UI uploads fit.
+CORS is restricted to the frontend's origin (`http://localhost:3002` by default, configurable via `FRONTEND_ORIGIN`). Body limit is 25 MB so typical UI uploads fit.
 
 ## Smoke test
 
@@ -179,7 +181,7 @@ visionstudio/
 | `{"error":"... API_KEY_INVALID ..."}`                                                     | `backend/.env` still has placeholder, or wrong key type. Real keys are 39 chars starting with `AIzaSy`. Restart backend after updating.                                                                                                                                                                                                                                                           |
 | `{"error":"models/gemini-2.5-flash-image is not found"}`                                  | Backend's `@google/generative-ai` SDK is too old. `cd backend && npm install @google/generative-ai@latest`                                                                                                                                                                                                                                                                                        |
 | Browser shows broken-image icons for logos                                                | Hard reload (Cmd-Shift-R). Logos are imported from `../assets/` and served by Vite.                                                                                                                                                                                                                                                                                                               |
-| `CORS policy` errors in browser console                                                   | Frontend running somewhere other than `:3000`. Update `app.use(cors({ origin: ... }))` in `backend/index.js`.                                                                                                                                                                                                                                                                                     |
+| `CORS policy` errors in browser console                                                   | Frontend running on a port the backend doesn't expect. Set `FRONTEND_ORIGIN` env var (or use the Settings UI's port config, which sets it automatically) to match.                                                                                                                                                                                                                                                                                     |
 | `Failed to fetch` from frontend                                                           | Backend isn't running, or crashed. Check `tail -20 /tmp/visionstudio-backend.log` (or whatever you redirect stdout to).                                                                                                                                                                                                                                                                           |
 | Backend silently restarts when editing                                                    | Vite watches the project root including `backend/` — that's expected dev-loop behavior. Production should run them separately.                                                                                                                                                                                                                                                                    |
 | Background removal stuck on "Processing..."                                               | First run downloads ~5MB model. Check browser DevTools Network tab. If download fails, check internet connection and try again.                                                                                                                                                                                                                                                                   |

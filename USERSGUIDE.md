@@ -22,7 +22,7 @@ Welcome to **Th3rdAI Vision Studio** — your AI-powered image editing and trans
 
 3. **Open the App**
    - Open your web browser
-   - Go to: `http://localhost:3000`
+   - Go to: `http://localhost:3002`
    - You're ready to start editing!
 
 ---
