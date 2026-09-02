@@ -7,13 +7,10 @@ node_modules/
 dist/
 build/
 
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-backend/.env
+# Environment files — catches .env, .env.local, backend/.env, backend/.env.backup, etc.
+.env*
+!.env.example
+!**/.env.example
 
 # Logs
 logs
