@@ -1,11 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* th3rdai.com brand accent — see www.th3rdai.com's --blue/--purple */
+  --color-brand-blue: #3d5afe;
+  --color-brand-purple: #a855f7;
 }
 
 body {
   @apply bg-[#0F0F0F] text-[#E0E0E0];
+}
+
+.bg-brand-gradient {
+  background: linear-gradient(100deg, var(--color-brand-blue) 0%, var(--color-brand-purple) 100%);
+}
+
+.text-brand-gradient {
+  background: linear-gradient(100deg, var(--color-brand-blue) 0%, var(--color-brand-purple) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }

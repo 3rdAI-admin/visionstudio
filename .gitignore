@@ -38,3 +38,6 @@ lerna-debug.log*
 # Misc
 .eslintcache
 *.tsbuildinfo
+
+# startup.sh runtime state
+.run/

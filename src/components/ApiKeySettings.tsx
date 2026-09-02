@@ -42,8 +42,12 @@ export default function ApiKeySettings({ isOpen, onClose }: ApiKeySettingsProps)
   };
 
   const handleTest = async () => {
+    if (!validateFormat(inputValue)) {
+      setTestResult('error');
+      return;
+    }
     setTestResult(null);
-    const valid = await testApiKey();
+    const valid = await testApiKey(inputValue);
     setTestResult(valid ? 'success' : 'error');
   };
 

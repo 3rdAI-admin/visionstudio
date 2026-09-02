@@ -16,12 +16,15 @@ import {
   Undo,
   Redo,
   Settings,
+  Server as ServerIcon,
 } from 'lucide-react';
 import { removeBackground } from '@imgly/background-removal';
 
 import { useEditHistory } from './hooks/useEditHistory';
 import { useApiKey } from './hooks/useApiKey';
+import { getBackendUrl } from './backendUrl';
 import ApiKeySettings from './components/ApiKeySettings';
+import AppSettings from './components/AppSettings';
 import logoEye from '../assets/Digital_Eye_medium.png';
 import logoTh3rdAI from '../assets/th3rdai-clear.png';
 
@@ -109,7 +112,9 @@ export default function App() {
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [imageMeta, setImageMeta] = useState<ImageMeta | null>(null);
   const [prompt, setPrompt] = useState('');
+  const [genPrompt, setGenPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isRemovingBackground, setIsRemovingBackground] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -118,8 +123,9 @@ export default function App() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputAddRef = useRef<HTMLInputElement>(null);
+  const genTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const isBusy = isProcessing || isRemovingBackground;
+  const isBusy = isProcessing || isGenerating || isRemovingBackground;
 
   // Undo/redo history for edits
   const initialHistoryState = {
@@ -132,6 +138,7 @@ export default function App() {
 
   // API key management
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAppSettingsOpen, setIsAppSettingsOpen] = useState(false);
   const apiKeyHook = useApiKey();
 
   // Undo/redo handlers
@@ -171,6 +178,9 @@ export default function App() {
         if (originalImage && prompt.trim() && !isBusy) {
           e.preventDefault();
           void handleEdit();
+        } else if (!originalImage && genPrompt.trim() && !isBusy) {
+          e.preventDefault();
+          void handleGenerate();
         }
       }
       if (e.key === 'Escape' && error) {
@@ -194,7 +204,7 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [originalImage, prompt, isBusy, error, history]);
+  }, [originalImage, prompt, genPrompt, isBusy, error, history]);
 
   const processImageFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -302,7 +312,7 @@ export default function App() {
     setIsProcessing(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:3001/api/generate', {
+      const response = await fetch(getBackendUrl('/api/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -337,9 +347,56 @@ export default function App() {
     } catch (err: unknown) {
       console.error('Error editing image:', err);
       const msg = err instanceof Error ? err.message : 'Network error';
-      setError(`Could not reach backend at localhost:3001 — ${msg}`);
+      setError(`Could not reach backend at ${getBackendUrl('')} — ${msg}`);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!genPrompt.trim()) return;
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const response = await fetch(getBackendUrl('/api/generate'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKeyHook.apiKey && { 'X-API-Key': apiKeyHook.apiKey }),
+        },
+        body: JSON.stringify({ prompt: genPrompt }),
+      });
+      const result = await response.json();
+      if (!response.ok || result.error) {
+        setError(extractFriendlyError(result.error || `HTTP ${response.status}`));
+      } else if (result.image) {
+        setOriginalImage({ data: result.image.data, mimeType: result.image.mimeType });
+        setEditedImage(null);
+        setCompareMode(false);
+        history.clear();
+
+        const probe = new Image();
+        probe.onload = () => {
+          setImageMeta({
+            name: 'generated.png',
+            width: probe.naturalWidth,
+            height: probe.naturalHeight,
+            byteSize: Math.ceil((result.image.data.length * 3) / 4),
+          });
+        };
+        probe.src = `data:${result.image.mimeType};base64,${result.image.data}`;
+        setGenPrompt('');
+      } else if (result.result) {
+        setError(`Model returned text instead of an image: ${result.result}`);
+      } else {
+        setError('Failed to generate an image. Please try a different prompt.');
+      }
+    } catch (err: unknown) {
+      console.error('Error generating image:', err);
+      const msg = err instanceof Error ? err.message : 'Network error';
+      setError(`Could not reach backend at ${getBackendUrl('')} — ${msg}`);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -402,16 +459,27 @@ export default function App() {
                     ? 'bg-green-500'
                     : apiKeyHook.status === 'invalid'
                       ? 'bg-red-500'
-                      : 'bg-gray-500'
+                      : apiKeyHook.serverKeyConfigured
+                        ? 'bg-blue-500'
+                        : 'bg-gray-500'
                 }`}
                 title={
                   apiKeyHook.status === 'valid'
-                    ? 'API key set'
+                    ? 'Browser API key set'
                     : apiKeyHook.status === 'invalid'
                       ? 'Invalid API key'
-                      : 'No API key set'
+                      : apiKeyHook.serverKeyConfigured
+                        ? 'Using server-configured key (.env)'
+                        : 'No API key set'
                 }
               />
+            </button>
+            <button
+              onClick={() => setIsAppSettingsOpen(true)}
+              className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+              aria-label="App Settings"
+            >
+              <ServerIcon className="w-4 h-4" />
             </button>
             {editedImage && (
               <>
@@ -457,7 +525,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={downloadImage}
-                  className="px-4 py-1.5 bg-white text-black text-[10px] font-bold uppercase tracking-widest rounded hover:bg-neutral-200 transition-colors flex items-center gap-2"
+                  className="px-4 py-1.5 bg-brand-gradient text-white text-[10px] font-bold uppercase tracking-widest rounded hover:opacity-90 hover:-translate-y-px transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
                 >
                   <Download className="w-3 h-3" />
                   Export Image
@@ -479,15 +547,66 @@ export default function App() {
               className="max-w-2xl mx-auto text-center"
             >
               <div className="mb-12">
-                <div className="flex justify-center mb-8">
-                  <img src={logoTh3rdAI} className="w-48 h-auto opacity-80" alt="Th3rdAI Logo" />
+                <div className="relative flex justify-center mb-8">
+                  <div
+                    className="absolute inset-0 m-auto w-40 h-40 rounded-full opacity-60"
+                    style={{
+                      background:
+                        'radial-gradient(circle, rgba(61,90,254,.38) 0%, rgba(168,85,247,.32) 45%, transparent 72%)',
+                    }}
+                    aria-hidden="true"
+                  />
+                  <img
+                    src={logoTh3rdAI}
+                    className="relative w-48 h-auto opacity-90"
+                    alt="Th3rdAI Logo"
+                  />
                 </div>
                 <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-4 text-white/40">
                   Neural Imaging Engine
                 </h2>
                 <h3 className="text-4xl font-light mb-6 tracking-tight text-white">
-                  Transform any image with <span className="italic font-serif">words</span>
+                  Transform any image with{' '}
+                  <span className="italic font-serif text-brand-gradient">words</span>
                 </h3>
+              </div>
+
+              <div className="bg-[#161616] border border-white/10 rounded-lg p-8 text-left">
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-6 text-center">
+                  Natural Language Prompt
+                </h3>
+                <textarea
+                  ref={genTextareaRef}
+                  value={genPrompt}
+                  onChange={(e) => {
+                    setGenPrompt(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  placeholder="DESCRIBE THE IMAGE TO GENERATE..."
+                  className="w-full h-28 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/10 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
+                />
+                <p className="text-[9px] text-white/20 mt-2 tracking-wide font-mono text-center">
+                  ⌘/Ctrl + ENTER to submit
+                </p>
+                <button
+                  onClick={handleGenerate}
+                  disabled={isBusy || !genPrompt.trim()}
+                  className="mt-4 w-full py-3 bg-brand-gradient text-white disabled:opacity-20 rounded text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:opacity-90 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Generate Image'
+                  )}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4 my-8">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">
+                  Or
+                </span>
+                <div className="flex-1 h-px bg-white/10" />
               </div>
 
               <div
@@ -498,7 +617,7 @@ export default function App() {
                 onDrop={handleDrop}
                 className={`group relative border rounded-lg p-20 transition-all cursor-pointer ${
                   isDragging
-                    ? 'border-white/40 bg-white/[0.08] scale-[1.02]'
+                    ? 'border-brand-blue bg-white/[0.08] scale-[1.02]'
                     : 'border-white/10 bg-[#161616] hover:bg-white/[0.03]'
                 }`}
                 role="button"
@@ -584,7 +703,7 @@ export default function App() {
                           if (error) setError(null);
                         }}
                         placeholder="DEFINE TRANSFORMATION..."
-                        className="w-full h-40 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/10 focus:outline-none focus:border-white/30 transition-all resize-none uppercase tracking-wider"
+                        className="w-full h-40 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/10 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
                       />
                       <p className="text-[9px] text-white/20 mt-2 tracking-wide font-mono">
                         ⌘/Ctrl + ENTER to submit · ESC to dismiss errors
@@ -600,7 +719,7 @@ export default function App() {
                     <button
                       onClick={handleEdit}
                       disabled={isBusy || !prompt.trim()}
-                      className="w-full py-3 bg-white text-black disabled:opacity-20 rounded text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-brand-gradient text-white disabled:opacity-20 rounded text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:opacity-90 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
                     >
                       {isProcessing ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -919,6 +1038,9 @@ export default function App() {
 
       {/* API Key Settings Modal */}
       <ApiKeySettings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* App Settings Modal — ports + restart */}
+      <AppSettings isOpen={isAppSettingsOpen} onClose={() => setIsAppSettingsOpen(false)} />
     </div>
   );
 }

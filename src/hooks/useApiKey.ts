@@ -4,22 +4,24 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { getBackendUrl } from '../backendUrl';
 
 const STORAGE_KEY = 'gemini_api_key';
 const GEMINI_KEY_REGEX = /^AIzaSy[A-Za-z0-9_-]{33}$/;
 
-export type ApiKeyStatus = 'not-set' | 'valid' | 'invalid' | 'testing';
+export type ApiKeyStatus = 'not-set' | 'valid' | 'invalid' | 'testing' | 'server-configured';
 
 export interface UseApiKeyReturn {
   // State
   apiKey: string | null;
   status: ApiKeyStatus;
   isTesting: boolean;
+  serverKeyConfigured: boolean;
 
   // Actions
   setApiKey: (key: string) => void;
   removeApiKey: () => void;
-  testApiKey: () => Promise<boolean>;
+  testApiKey: (key?: string) => Promise<boolean>;
   validateFormat: (key: string) => boolean;
 }
 
@@ -47,6 +49,7 @@ export function useApiKey(): UseApiKeyReturn {
   const [apiKey, setApiKeyState] = useState<string | null>(null);
   const [status, setStatus] = useState<ApiKeyStatus>('not-set');
   const [isTesting, setIsTesting] = useState(false);
+  const [serverKeyConfigured, setServerKeyConfigured] = useState(false);
 
   // Load saved API key from localStorage on mount
   useEffect(() => {
@@ -55,6 +58,23 @@ export function useApiKey(): UseApiKeyReturn {
       setApiKeyState(saved);
       setStatus('valid'); // Assume valid until tested
     }
+  }, []);
+
+  // Check whether the backend has a working .env key, so the UI can show a
+  // distinct "using server key" state instead of looking identical to "no key".
+  useEffect(() => {
+    let cancelled = false;
+    fetch(getBackendUrl('/api/key-status'))
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setServerKeyConfigured(!!data.configured);
+      })
+      .catch(() => {
+        if (!cancelled) setServerKeyConfigured(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /**
@@ -97,19 +117,20 @@ export function useApiKey(): UseApiKeyReturn {
    * Test API key validity with a lightweight API call
    * Returns true if key is valid, false otherwise
    */
-  const testApiKey = useCallback(async (): Promise<boolean> => {
-    if (!apiKey) return false;
+  const testApiKey = useCallback(async (key?: string): Promise<boolean> => {
+    const keyToTest = key ?? apiKey;
+    if (!keyToTest) return false;
 
     setIsTesting(true);
     setStatus('testing');
 
     try {
       // Use minimal prompt to avoid wasting quota
-      const response = await fetch('http://localhost:3001/api/generate', {
+      const response = await fetch(getBackendUrl('/api/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
+          'X-API-Key': keyToTest,
         },
         body: JSON.stringify({
           prompt: 'test',
@@ -138,6 +159,7 @@ export function useApiKey(): UseApiKeyReturn {
     apiKey,
     status,
     isTesting,
+    serverKeyConfigured,
     setApiKey,
     removeApiKey,
     testApiKey,

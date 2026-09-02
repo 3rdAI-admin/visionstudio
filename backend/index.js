@@ -1,11 +1,14 @@
 require('dotenv').config({ path: './.env' });
 const express = require('express');
 const cors = require('cors');
+const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
 const app = express();
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000' }));
 // Images sent as base64 are large — bump default 100KB limit.
 app.use(express.json({ limit: '25mb' }));
 
@@ -18,6 +21,47 @@ app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} ${req.method} ${req.url} ${res.statusCode} ${ms}ms ${len}B`);
   });
   next();
+});
+
+app.get('/api/key-status', (req, res) => {
+  const key = process.env.GOOGLE_API_KEY;
+  const configured = !!key && /^AIzaSy[A-Za-z0-9_-]{33}$/.test(key);
+  res.json({ configured });
+});
+
+const isValidPort = (n) => Number.isInteger(n) && n > 0 && n < 65536;
+
+// Restarts both processes via startup.sh. Optional backendPort/frontendPort
+// in the body are written to .run/ports.env first so startup.sh picks them
+// up; ports are validated here since they end up sourced by a shell script.
+// Responds before exiting so the frontend's fetch doesn't just hang against
+// a dying connection.
+app.post('/api/restart', (req, res) => {
+  const { backendPort, frontendPort } = req.body || {};
+  const root = path.join(__dirname, '..');
+
+  if (backendPort !== undefined || frontendPort !== undefined) {
+    if (backendPort !== undefined && !isValidPort(backendPort)) {
+      return res.status(400).json({ error: 'backendPort must be an integer between 1 and 65535' });
+    }
+    if (frontendPort !== undefined && !isValidPort(frontendPort)) {
+      return res.status(400).json({ error: 'frontendPort must be an integer between 1 and 65535' });
+    }
+    const lines = [];
+    if (backendPort !== undefined) lines.push(`BACKEND_PORT=${backendPort}`);
+    if (frontendPort !== undefined) lines.push(`FRONTEND_PORT=${frontendPort}`);
+    fs.mkdirSync(path.join(root, '.run'), { recursive: true });
+    fs.writeFileSync(path.join(root, '.run', 'ports.env'), lines.join('\n') + '\n');
+  }
+
+  res.json({ restarting: true });
+  const startupScript = path.join(root, 'startup.sh');
+  spawn(startupScript, ['restart'], {
+    cwd: root,
+    detached: true,
+    stdio: 'ignore',
+  }).unref();
+  setTimeout(() => process.exit(0), 250);
 });
 
 app.post('/api/generate', async (req, res) => {
@@ -105,7 +149,7 @@ function friendlyError(err) {
     .replace(/^Error fetching from [^:]+:\s*/, '');
 }
 
-const PORT = 3001;
+const PORT = Number(process.env.PORT) || 3001;
 app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);
 });
