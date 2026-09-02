@@ -43,3 +43,20 @@ lerna-debug.log*
 
 # startup.sh runtime state
 .run/
+
+# iOS (Capacitor/Xcode) — ios/ itself is tracked (native project source),
+# but not build products, user-specific settings, or SPM's resolved cache.
+ios/App/build/
+ios/App/Pods/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+ios/**/*.xcuserstate
+ios/DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+# Synced web build (byte-for-byte copy of dist/, ~27MB incl. the
+# background-removal WASM model) — regenerate with:
+#   npm run build && npx cap sync ios
+ios/App/App/public/

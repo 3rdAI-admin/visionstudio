@@ -16,7 +16,6 @@ import {
   Undo,
   Redo,
   Settings,
-  Server as ServerIcon,
 } from 'lucide-react';
 import { removeBackground } from '@imgly/background-removal';
 
@@ -24,7 +23,6 @@ import { useEditHistory } from './hooks/useEditHistory';
 import { useApiKey } from './hooks/useApiKey';
 import { getBackendUrl } from './backendUrl';
 import ApiKeySettings from './components/ApiKeySettings';
-import AppSettings from './components/AppSettings';
 import logoEye from '../assets/Digital_Eye_medium.png';
 
 interface ImageState {
@@ -137,7 +135,6 @@ export default function App() {
 
   // API key management
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isAppSettingsOpen, setIsAppSettingsOpen] = useState(false);
   const apiKeyHook = useApiKey();
 
   // Undo/redo handlers
@@ -472,13 +469,6 @@ export default function App() {
                         : 'No API key set'
                 }
               />
-            </button>
-            <button
-              onClick={() => setIsAppSettingsOpen(true)}
-              className="flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
-              aria-label="App Settings"
-            >
-              <ServerIcon className="w-4 h-4" />
             </button>
             {editedImage && (
               <>
@@ -1027,9 +1017,6 @@ export default function App() {
 
       {/* API Key Settings Modal */}
       <ApiKeySettings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-
-      {/* App Settings Modal — ports + restart */}
-      <AppSettings isOpen={isAppSettingsOpen} onClose={() => setIsAppSettingsOpen(false)} />
     </div>
   );
 }

@@ -3,23 +3,34 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const STORAGE_KEY = 'backend_port';
-const DEFAULT_PORT = 3001;
+const STORAGE_KEY = 'backend_url';
+
+// Ships as the app's default once Track 1 (hosting) is live — set via
+// VITE_BACKEND_URL at build time so a Capacitor build always points at a
+// real HTTPS host (iOS blocks plain http:// outside a browser tab, and
+// there's no "localhost dev server" to fall back on in a native bundle).
+const BUILD_DEFAULT = import.meta.env.VITE_BACKEND_URL as string | undefined;
+
+// Local development fallback when no VITE_BACKEND_URL is set — matches
+// backend/index.js's own default port.
+const DEV_DEFAULT = 'http://localhost:3001';
 
 /**
- * Backend port, editable from Settings and persisted in localStorage.
- * Falls back to the default (matches backend/index.js's own default) when unset.
+ * Backend base URL. Order of precedence: a value saved via setBackendUrl()
+ * (e.g. from a future settings UI) > VITE_BACKEND_URL baked in at build time
+ * > local dev default. Trailing slashes are stripped so callers can safely
+ * do `${getBackendUrl()}/api/...`.
  */
-export function getBackendPort(): number {
+export function getBackendUrl(path: string = ''): string {
   const saved = localStorage.getItem(STORAGE_KEY);
-  const port = saved ? Number(saved) : NaN;
-  return Number.isInteger(port) && port > 0 && port < 65536 ? port : DEFAULT_PORT;
+  const base = (saved || BUILD_DEFAULT || DEV_DEFAULT).replace(/\/+$/, '');
+  return `${base}${path}`;
 }
 
-export function setBackendPort(port: number): void {
-  localStorage.setItem(STORAGE_KEY, String(port));
+export function setBackendUrl(url: string): void {
+  localStorage.setItem(STORAGE_KEY, url.replace(/\/+$/, ''));
 }
 
-export function getBackendUrl(path: string): string {
-  return `http://localhost:${getBackendPort()}${path}`;
+export function resetBackendUrl(): void {
+  localStorage.removeItem(STORAGE_KEY);
 }
