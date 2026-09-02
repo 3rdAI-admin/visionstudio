@@ -1,4 +1,4 @@
-# Th3rdAI Vision Studio (visionedit)
+# Th3rdAI Vision Studio (visionstudio)
 
 Browser-based image editor and converter that transforms images via natural-language prompts and AI-powered background removal. React + TypeScript frontend, Node/Express backend proxy in front of Google's `gemini-2.5-flash-image` model (Nano Banana), plus client-side background removal.
 
@@ -58,7 +58,7 @@ A real Gemini API key is exactly 39 characters and starts with `AIzaSy`. Anythin
 
 ## Using Your Own API Key (Optional)
 
-VisionEdit supports two modes:
+VisionStudio supports two modes:
 
 **Option 1: Shared Backend Key (Current)**
 Add `GOOGLE_API_KEY` to `backend/.env` - all users share this key and rate limits.
@@ -153,7 +153,7 @@ curl -sS -X POST http://localhost:3001/api/generate \
 ## Project layout
 
 ```
-visionedit/
+visionstudio/
 ├── assets/                      # Brand logos imported by App.tsx (project root)
 │   ├── Digital_Eye_medium.png   # Eye logo (header + footer)
 │   └── th3rdai-clear.png        # Wordmark (hero)
@@ -180,7 +180,7 @@ visionedit/
 | `{"error":"models/gemini-2.5-flash-image is not found"}` | Backend's `@google/generative-ai` SDK is too old. `cd backend && npm install @google/generative-ai@latest`                                           |
 | Browser shows broken-image icons for logos               | Hard reload (Cmd-Shift-R). Logos are imported from `../assets/` and served by Vite.                                                                  |
 | `CORS policy` errors in browser console                  | Frontend running somewhere other than `:3000`. Update `app.use(cors({ origin: ... }))` in `backend/index.js`.                                        |
-| `Failed to fetch` from frontend                          | Backend isn't running, or crashed. Check `tail -20 /tmp/visionedit-backend.log` (or whatever you redirect stdout to).                                |
+| `Failed to fetch` from frontend                          | Backend isn't running, or crashed. Check `tail -20 /tmp/visionstudio-backend.log` (or whatever you redirect stdout to).                                |
 | Backend silently restarts when editing                   | Vite watches the project root including `backend/` — that's expected dev-loop behavior. Production should run them separately.                       |
 | Background removal stuck on "Processing..."              | First run downloads ~5MB model. Check browser DevTools Network tab. If download fails, check internet connection and try again.                      |
 | Background removal fails with error                      | Browser may not support WebAssembly. Try Chrome/Edge/Firefox latest. Safari should also work.                                                        |
@@ -188,4 +188,4 @@ visionedit/
 
 ## Logs
 
-Backend logs every request (timestamp, method, path, status, duration, response bytes). If you start it with `nohup node index.js > /tmp/visionedit-backend.log 2>&1 &`, tail that file. Otherwise it's stdout.
+Backend logs every request (timestamp, method, path, status, duration, response bytes). If you start it with `nohup node index.js > /tmp/visionstudio-backend.log 2>&1 &`, tail that file. Otherwise it's stdout.

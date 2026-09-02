@@ -26,7 +26,6 @@ import { getBackendUrl } from './backendUrl';
 import ApiKeySettings from './components/ApiKeySettings';
 import AppSettings from './components/AppSettings';
 import logoEye from '../assets/Digital_Eye_medium.png';
-import logoTh3rdAI from '../assets/th3rdai-clear.png';
 
 interface ImageState {
   data: string;
@@ -414,7 +413,7 @@ export default function App() {
     if (!editedImage) return;
     const link = document.createElement('a');
     link.href = editedImage;
-    link.download = `visionedit-${Date.now()}.png`;
+    link.download = `visionstudio-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -547,20 +546,11 @@ export default function App() {
               className="max-w-2xl mx-auto text-center"
             >
               <div className="mb-12">
-                <div className="relative flex justify-center mb-8">
-                  <div
-                    className="absolute inset-0 m-auto w-40 h-40 rounded-full opacity-60"
-                    style={{
-                      background:
-                        'radial-gradient(circle, rgba(61,90,254,.38) 0%, rgba(168,85,247,.32) 45%, transparent 72%)',
-                    }}
-                    aria-hidden="true"
-                  />
-                  <img
-                    src={logoTh3rdAI}
-                    className="relative w-48 h-auto opacity-90"
-                    alt="Th3rdAI Logo"
-                  />
+                <div className="flex justify-center mb-8">
+                  <span className="text-5xl font-bold uppercase tracking-tight">
+                    <span className="text-white">Th3rd</span>
+                    <span className="text-brand-gradient">AI</span>
+                  </span>
                 </div>
                 <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-4 text-white/40">
                   Neural Imaging Engine
@@ -591,7 +581,7 @@ export default function App() {
                 <button
                   onClick={handleGenerate}
                   disabled={isBusy || !genPrompt.trim()}
-                  className="mt-4 w-full py-3 bg-brand-gradient text-white disabled:opacity-20 rounded text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:opacity-90 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
+                  className="mt-4 w-full py-3 bg-brand-gradient text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.45)] disabled:opacity-20 rounded text-xs font-bold uppercase tracking-[0.15em] transition-all hover:opacity-90 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
                 >
                   {isGenerating ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -615,10 +605,10 @@ export default function App() {
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`group relative border rounded-lg p-20 transition-all cursor-pointer ${
+                className={`group relative border-2 border-dashed rounded-lg p-20 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue ${
                   isDragging
                     ? 'border-brand-blue bg-white/[0.08] scale-[1.02]'
-                    : 'border-white/10 bg-[#161616] hover:bg-white/[0.03]'
+                    : 'border-white/25 bg-[#161616] hover:border-white/50 hover:bg-white/[0.03]'
                 }`}
                 role="button"
                 aria-label="Import media: drag and drop or click to browse"
@@ -719,7 +709,7 @@ export default function App() {
                     <button
                       onClick={handleEdit}
                       disabled={isBusy || !prompt.trim()}
-                      className="w-full py-3 bg-brand-gradient text-white disabled:opacity-20 rounded text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:opacity-90 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
+                      className="w-full py-3 bg-brand-gradient text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.45)] disabled:opacity-20 rounded text-xs font-bold uppercase tracking-[0.15em] transition-all hover:opacity-90 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
                     >
                       {isProcessing ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

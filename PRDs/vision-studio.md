@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD)
 
-**Product / Feature:** Th3rdAI Vision Studio (VisionEdit)
+**Product / Feature:** Th3rdAI Vision Studio (VisionStudio)
 **Version:** 1.0
 **Date:** 2026-05-02
 **Status:** Approved
@@ -400,7 +400,7 @@ npm run dev
 **Status:** Approved
 
 **Next Steps:**
-1. ✅ PRD approved and saved to `PRDs/visionedit-vision-studio.md`
+1. ✅ PRD approved and saved to `PRDs/vision-studio.md`
 2. Run `/generate-prp` to create execution plan with multi-agent task breakdown
 3. Run `/generate-validate` to update validation command (already exists)
 4. Run `/execute-prp` to implement any new features from execution plan

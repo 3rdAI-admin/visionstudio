@@ -29,7 +29,7 @@ Welcome to **Th3rdAI Vision Studio** — your AI-powered image editing and trans
 
 ## 🔑 Managing Your API Key
 
-VisionEdit can use either a shared backend API key or your personal Google Gemini API key.
+VisionStudio can use either a shared backend API key or your personal Google Gemini API key.
 
 ### To add your own key:
 

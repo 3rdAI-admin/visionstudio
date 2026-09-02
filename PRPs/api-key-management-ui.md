@@ -1,4 +1,4 @@
-name: "Secure API Key Management UI for VisionEdit"
+name: "Secure API Key Management UI for VisionStudio"
 description: |
   Add a settings UI that allows users to bring their own Gemini API key (BYOK pattern),
   with secure localStorage management, validation, testing, and clear security warnings.
@@ -6,7 +6,7 @@ description: |
 ---
 
 ## Goal
-Add a secure API key management interface to VisionEdit that allows users to provide, test, edit, and remove their own Google Gemini API keys. This enables users to use their own API quotas and billing, making the app more distributable without requiring a shared backend API key.
+Add a secure API key management interface to VisionStudio that allows users to provide, test, edit, and remove their own Google Gemini API keys. This enables users to use their own API quotas and billing, making the app more distributable without requiring a shared backend API key.
 
 ## Why
 - **Scalability:** Users bring their own API keys, eliminating shared rate limits and billing concerns
@@ -84,7 +84,7 @@ Users will be able to:
   why: Pattern for custom React hooks with TypeScript interfaces
   critical: useEditHistory.ts:63-149 shows hook structure with return types
 
-- file: PRDs/visionedit-vision-studio.md
+- file: PRDs/vision-studio.md
   section: 3.2 Non-Functional Requirements
   line: NFR-1
   critical: "Security: API key never exposed to browser" - BYOK changes this to user's own risk
@@ -92,7 +92,7 @@ Users will be able to:
 
 ### Current Codebase Structure
 ```bash
-visionedit/
+visionstudio/
 ├── src/
 │   ├── App.tsx                      # Main component - needs settings modal integration
 │   ├── hooks/
@@ -315,7 +315,7 @@ Task 7: Update README.md with BYOK instructions
   ADD new section after "Setup" (line ~54):
     ## Using Your Own API Key (Optional)
 
-    VisionEdit supports two modes:
+    VisionStudio supports two modes:
 
     **Option 1: Shared Backend Key (Current)**
     Add `GOOGLE_API_KEY` to `backend/.env` - all users share this key and rate limits.
@@ -335,7 +335,7 @@ Task 8: Update USERSGUIDE.md with API key management
   ADD new section after "Getting Started":
     ### Managing Your API Key
 
-    VisionEdit can use either a shared backend API key or your personal Google Gemini API key.
+    VisionStudio can use either a shared backend API key or your personal Google Gemini API key.
 
     **To add your own key:**
     1. Get a free API key from https://aistudio.google.com/apikey

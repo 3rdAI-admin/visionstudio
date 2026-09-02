@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const testImagePath = path.join(__dirname, 'fixtures', 'test-image.png');
 
-test.describe('VisionEdit E2E Tests', () => {
+test.describe('VisionStudio E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });

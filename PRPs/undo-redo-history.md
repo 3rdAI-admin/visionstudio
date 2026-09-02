@@ -1,4 +1,4 @@
-name: "Undo/Redo History for VisionEdit"
+name: "Undo/Redo History for VisionStudio"
 description: |
   Implement undo/redo functionality to allow users to navigate through their editing history,
   revert mistakes, and restore previous edits without re-uploading images.
@@ -6,7 +6,7 @@ description: |
 ---
 
 ## Goal
-Add undo/redo functionality to VisionEdit so users can navigate backwards and forwards through their editing history, with keyboard shortcuts (Cmd/Ctrl+Z for undo, Cmd/Ctrl+Shift+Z for redo) and UI buttons. This addresses a fundamental UX expectation for any image editor.
+Add undo/redo functionality to VisionStudio so users can navigate backwards and forwards through their editing history, with keyboard shortcuts (Cmd/Ctrl+Z for undo, Cmd/Ctrl+Shift+Z for redo) and UI buttons. This addresses a fundamental UX expectation for any image editor.
 
 ## Why
 - **User Experience:** Users expect undo/redo in editing tools - it's a fundamental pattern in Photoshop, Figma, Canva, and every modern editor
@@ -63,14 +63,14 @@ Users will be able to:
 - file: src/test/App.test.tsx
   why: Existing test patterns with Vitest and @testing-library/react
 
-- file: PRDs/visionedit-vision-studio.md
+- file: PRDs/vision-studio.md
   section: 10.1 Future Enhancements
   why: Undo/redo listed as priority post-v1.0 feature
 ```
 
 ### Current Codebase Structure
 ```bash
-visionedit/
+visionstudio/
 ├── src/
 │   ├── App.tsx                  # Main component (500+ lines, needs refactor)
 │   ├── main.tsx
@@ -107,7 +107,7 @@ src/
 
 ### Known Gotchas & Constraints
 ```typescript
-// CRITICAL: VisionEdit-specific constraints
+// CRITICAL: VisionStudio-specific constraints
 
 // 1. State to track in history
 interface EditState {

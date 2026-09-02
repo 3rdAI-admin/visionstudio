@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Comprehensive validation for VisionEdit codebase
+description: Comprehensive validation for VisionStudio codebase
 ---
 
-# Validate VisionEdit Project
+# Validate VisionStudio Project
 
 > **Complete validation workflow** for React + TypeScript frontend with Express backend
 
-This validation ensures code quality, type safety, and complete user workflow testing for the VisionEdit AI-powered image editing application.
+This validation ensures code quality, type safety, and complete user workflow testing for the VisionStudio AI-powered image editing application.
 
 **Execute ONLY the validation in this file.** Do not run another project's validation. Use **`/validate-project`** (not `/validate`) to avoid conflicts with team/global commands.
 ## Phase 1: Linting
@@ -190,9 +190,9 @@ After completing validation, record results in the project journal:
 `mkdir -p journal`
 
 **Append validation result to today's journal:**
-`echo "$(date +%H:%M) | Pass/Fail | P1:OK P2:OK P3:SKIP P4:SKIP P5:MANUAL | VisionEdit validation" >> journal/$(date +%Y-%m-%d).md`
+`echo "$(date +%H:%M) | Pass/Fail | P1:OK P2:OK P3:SKIP P4:SKIP P5:MANUAL | VisionStudio validation" >> journal/$(date +%Y-%m-%d).md`
 
 **Update journal README:**
-`echo "$(date +%Y-%m-%d) | Pass/Fail | P1:OK P2:OK P3:SKIP P4:SKIP P5:MANUAL | VisionEdit validation" >> journal/README.md`
+`echo "$(date +%Y-%m-%d) | Pass/Fail | P1:OK P2:OK P3:SKIP P4:SKIP P5:MANUAL | VisionStudio validation" >> journal/README.md`
 
 Replace "Pass/Fail" with actual outcome (Pass if all configured phases succeeded, Fail if any errors occurred)

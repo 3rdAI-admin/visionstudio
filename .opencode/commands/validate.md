@@ -1,8 +1,8 @@
 ---
-description: Project-specific validation for visionedit (lint, typing)
+description: Project-specific validation for visionstudio (lint, typing)
 ---
 
-# Validate visionedit
+# Validate visionstudio
 
 > Run from project root. This validates TypeScript type checks and lints via tsc
 

@@ -1,4 +1,4 @@
-# visionedit — agent context
+# visionstudio — agent context
 
 Browser-based image editor + converter. **React 18 + TypeScript + Vite** frontend, **Node + Express** backend that proxies Google's `gemini-2.5-flash-image` (Nano Banana). See `README.md` for setup/run/API.
 
@@ -44,7 +44,7 @@ Browser-based image editor + converter. **React 18 + TypeScript + Vite** fronten
 
 ## When the user says "the app"
 
-They mean the visionedit React app at `http://localhost:3000`, not Code Companion (the IDE/agent tool the user often uses to edit this project).
+They mean the visionstudio React app, not Code Companion (the IDE/agent tool the user often uses to edit this project).
 
 ## What NOT to add
 

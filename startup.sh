@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# start/stop/restart the visionedit frontend + backend
+# start/stop/restart the visionstudio frontend + backend
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
