@@ -537,7 +537,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 sm:py-12">
         <AnimatePresence mode="wait">
           {!originalImage ? (
             <motion.div
@@ -547,25 +547,25 @@ export default function App() {
               exit={{ opacity: 0 }}
               className="max-w-2xl mx-auto text-center"
             >
-              <div className="mb-12">
-                <div className="flex items-center justify-center gap-4 mb-8">
-                  <img src={logoEye} className="w-12 h-12 object-contain" alt="" />
-                  <span className="text-5xl font-bold uppercase tracking-tight">
+              <div className="mb-8 sm:mb-12">
+                <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                  <img src={logoEye} className="w-9 h-9 sm:w-12 sm:h-12 object-contain" alt="" />
+                  <span className="text-3xl sm:text-5xl font-bold uppercase tracking-tight">
                     <span className="text-white">Th3rd</span>
                     <span className="text-brand-gradient">AI</span>
                   </span>
                 </div>
-                <h2 className="text-sm font-bold uppercase tracking-[0.3em] mb-4 text-white/40">
+                <h2 className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-3 sm:mb-4 text-white/40">
                   Neural Imaging Engine
                 </h2>
-                <h3 className="text-4xl font-light mb-6 tracking-tight text-white">
+                <h3 className="text-2xl sm:text-4xl font-light mb-6 tracking-tight text-white">
                   Transform any image with{' '}
                   <span className="italic font-serif text-brand-gradient">words</span>
                 </h3>
               </div>
 
-              <div className="bg-[#161616] border border-white/10 rounded-lg p-8 text-left">
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-6 text-center">
+              <div className="bg-[#161616] border border-white/10 rounded-lg p-5 sm:p-8 text-left">
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-4 sm:mb-6 text-center">
                   Natural Language Prompt
                 </h3>
                 <textarea
@@ -576,7 +576,7 @@ export default function App() {
                     if (error) setError(null);
                   }}
                   placeholder="DESCRIBE THE IMAGE TO GENERATE..."
-                  className="w-full h-28 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/35 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
+                  className="w-full h-24 sm:h-28 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/35 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
                 />
                 <p className="text-[10px] text-white/45 mt-2 tracking-wide font-mono text-center">
                   ⌘/Ctrl + ENTER to submit
@@ -590,7 +590,7 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-4 my-8">
+              <div className="flex items-center gap-4 my-6 sm:my-8">
                 <div className="flex-1 h-px bg-white/10" />
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20">
                   Or
@@ -604,7 +604,7 @@ export default function App() {
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`group relative border-2 border-dashed rounded-lg p-20 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue ${
+                className={`group relative border-2 border-dashed rounded-lg p-10 sm:p-20 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue ${
                   isDragging
                     ? 'border-brand-blue bg-white/[0.08] scale-[1.02]'
                     : 'border-white/25 bg-[#161616] hover:border-white/50 hover:bg-white/[0.03]'
@@ -649,7 +649,7 @@ export default function App() {
                 </div>
               )}
 
-              <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-12 text-center">
+              <div className="mt-10 sm:mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 text-center">
                 {[
                   { title: 'Analysis', desc: 'NEURAL SCENE PARSING' },
                   { title: 'Precision', desc: 'PIXEL-LEVEL CONTROL' },
