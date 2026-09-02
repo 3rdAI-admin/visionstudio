@@ -117,43 +117,46 @@ export function useApiKey(): UseApiKeyReturn {
    * Test API key validity with a lightweight API call
    * Returns true if key is valid, false otherwise
    */
-  const testApiKey = useCallback(async (key?: string): Promise<boolean> => {
-    const keyToTest = key ?? apiKey;
-    if (!keyToTest) return false;
+  const testApiKey = useCallback(
+    async (key?: string): Promise<boolean> => {
+      const keyToTest = key ?? apiKey;
+      if (!keyToTest) return false;
 
-    setIsTesting(true);
-    setStatus('testing');
+      setIsTesting(true);
+      setStatus('testing');
 
-    try {
-      // Use minimal prompt to avoid wasting quota
-      const response = await fetch(getBackendUrl('/api/generate'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': keyToTest,
-        },
-        body: JSON.stringify({
-          prompt: 'test',
-        }),
-      });
+      try {
+        // Use minimal prompt to avoid wasting quota
+        const response = await fetch(getBackendUrl('/api/generate'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': keyToTest,
+          },
+          body: JSON.stringify({
+            prompt: 'test',
+          }),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (response.ok && !result.error) {
-        setStatus('valid');
-        return true;
-      } else {
+        if (response.ok && !result.error) {
+          setStatus('valid');
+          return true;
+        } else {
+          setStatus('invalid');
+          return false;
+        }
+      } catch (error) {
+        console.error('API key test failed:', error);
         setStatus('invalid');
         return false;
+      } finally {
+        setIsTesting(false);
       }
-    } catch (error) {
-      console.error('API key test failed:', error);
-      setStatus('invalid');
-      return false;
-    } finally {
-      setIsTesting(false);
-    }
-  }, [apiKey]);
+    },
+    [apiKey],
+  );
 
   return {
     apiKey,

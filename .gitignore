@@ -7,6 +7,11 @@ node_modules/
 dist/
 build/
 
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
+
 # Environment files — catches .env, .env.local, backend/.env, backend/.env.backup, etc.
 .env*
 !.env.example

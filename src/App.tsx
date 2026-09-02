@@ -586,11 +586,7 @@ export default function App() {
                   disabled={isBusy || !genPrompt.trim()}
                   className="mt-4 w-full py-3 bg-brand-gradient text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.45)] disabled:opacity-20 rounded text-xs font-bold uppercase tracking-[0.15em] transition-all hover:opacity-90 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
                 >
-                  {isGenerating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    'Generate Image'
-                  )}
+                  {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate Image'}
                 </button>
               </div>
 

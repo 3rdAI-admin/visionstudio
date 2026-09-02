@@ -135,8 +135,8 @@ export default function AppSettings({ isOpen, onClose }: AppSettingsProps) {
             <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-lg p-3 mb-4 flex gap-2">
               <AlertTriangle className="w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
               <p className="text-xs text-white/70 leading-relaxed">
-                Port changes only take effect after Restart. If you change the frontend port,
-                you'll need to manually open the new URL in your browser afterward.
+                Port changes only take effect after Restart. If you change the frontend port, you'll
+                need to manually open the new URL in your browser afterward.
               </p>
             </div>
 
