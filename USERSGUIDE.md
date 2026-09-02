@@ -339,7 +339,7 @@ Pro tip: Experiment with different prompts knowing you can always undo!
 - ✅ Chrome (recommended)
 - ✅ Edge
 - ✅ Firefox
-- ✅ Safari
+- ✅ Safari — if Safari refuses to open `http://localhost:3002` (forces `https://` and fails), see the Troubleshooting section in `README.md` for the one-time HSTS-cache fix
 - Background removal requires WebAssembly support (all modern browsers have this)
 
 ### Q: Can I use this for commercial projects?

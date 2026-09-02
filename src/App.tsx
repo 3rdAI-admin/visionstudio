@@ -426,7 +426,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0F0F0F] text-[#E0E0E0] font-sans selection:bg-white selection:text-black">
       {/* Header */}
-      <header className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-50 flex items-center px-6">
+      <header className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-30 flex items-center px-6">
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <img src={logoEye} className="w-6 h-6 object-contain" alt="Th3rdAI" />
@@ -438,7 +438,7 @@ export default function App() {
             {originalImage && (
               <button
                 onClick={reset}
-                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                className="flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
                 aria-label="Reset workspace"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -447,7 +447,7 @@ export default function App() {
             )}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+              className="relative flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
               aria-label="Settings"
             >
               <Settings className="w-4 h-4" />
@@ -475,7 +475,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setIsAppSettingsOpen(true)}
-              className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+              className="flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
               aria-label="App Settings"
             >
               <ServerIcon className="w-4 h-4" />
@@ -490,7 +490,8 @@ export default function App() {
                     className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20
                                disabled:opacity-30 disabled:cursor-not-allowed
                                transition-all duration-200 flex items-center gap-2
-                               text-[10px] font-bold uppercase tracking-widest"
+                               text-[10px] font-bold uppercase tracking-widest
+                               focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                   >
                     <Undo className="w-3 h-3" />
                     <span>Undo</span>
@@ -502,7 +503,8 @@ export default function App() {
                     className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20
                                disabled:opacity-30 disabled:cursor-not-allowed
                                transition-all duration-200 flex items-center gap-2
-                               text-[10px] font-bold uppercase tracking-widest"
+                               text-[10px] font-bold uppercase tracking-widest
+                               focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                   >
                     <Redo className="w-3 h-3" />
                     <span>Redo</span>
@@ -514,7 +516,7 @@ export default function App() {
               <>
                 <button
                   onClick={() => setCompareMode((v) => !v)}
-                  className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                  className="flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
                   aria-pressed={compareMode}
                   aria-label="Toggle before/after comparison"
                   title="Toggle before/after comparison"
@@ -546,7 +548,8 @@ export default function App() {
               className="max-w-2xl mx-auto text-center"
             >
               <div className="mb-12">
-                <div className="flex justify-center mb-8">
+                <div className="flex items-center justify-center gap-4 mb-8">
+                  <img src={logoEye} className="w-12 h-12 object-contain" alt="" />
                   <span className="text-5xl font-bold uppercase tracking-tight">
                     <span className="text-white">Th3rd</span>
                     <span className="text-brand-gradient">AI</span>
@@ -573,9 +576,9 @@ export default function App() {
                     if (error) setError(null);
                   }}
                   placeholder="DESCRIBE THE IMAGE TO GENERATE..."
-                  className="w-full h-28 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/10 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
+                  className="w-full h-28 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/35 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
                 />
-                <p className="text-[9px] text-white/20 mt-2 tracking-wide font-mono text-center">
+                <p className="text-[10px] text-white/45 mt-2 tracking-wide font-mono text-center">
                   ⌘/Ctrl + ENTER to submit
                 </p>
                 <button
@@ -621,13 +624,13 @@ export default function App() {
                 }}
               >
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 border border-white/10 rounded flex items-center justify-center mb-6 text-white/50 group-hover:text-white transition-colors">
+                  <div className="w-12 h-12 border border-white/25 rounded flex items-center justify-center mb-6 text-white/80 group-hover:text-white group-hover:border-brand-blue transition-colors">
                     <Upload className="w-5 h-5" />
                   </div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-2">
                     Import Media
                   </p>
-                  <p className="text-[10px] text-white/30 uppercase tracking-widest">
+                  <p className="text-[10px] text-white/50 uppercase tracking-widest">
                     DRAG AND DROP OR CLICK TO BROWSE
                   </p>
                   <p className="text-[9px] text-white/20 uppercase tracking-widest mt-3 font-mono">
@@ -736,7 +739,7 @@ export default function App() {
                             setPrompt(format.prompt);
                             if (error) setError(null);
                           }}
-                          className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded text-[10px] font-medium uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors"
+                          className="px-3 py-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-brand-blue rounded text-[10px] font-medium uppercase tracking-widest text-white/80 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                         >
                           {format.label}
                         </button>
@@ -751,7 +754,7 @@ export default function App() {
                     <button
                       onClick={handleRemoveBackground}
                       disabled={isBusy}
-                      className="w-full px-4 py-3 bg-white/10 hover:bg-white/15 disabled:bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-widest text-white disabled:text-white/30 transition-colors flex items-center justify-center gap-2"
+                      className="w-full px-4 py-3 bg-white/10 hover:bg-white/15 disabled:bg-white/5 border border-white/10 rounded text-[10px] font-bold uppercase tracking-widest text-white disabled:text-white/30 transition-colors flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                     >
                       {isRemovingBackground ? (
                         <>
@@ -806,7 +809,7 @@ export default function App() {
                             setPrompt(hint.prompt);
                             if (error) setError(null);
                           }}
-                          className="w-full px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded text-[10px] font-medium uppercase tracking-widest text-white/40 hover:text-white/80 text-left transition-colors"
+                          className="w-full px-3 py-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-brand-blue rounded text-[10px] font-medium uppercase tracking-widest text-white/80 hover:text-white text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                         >
                           {hint.label}
                         </button>
@@ -842,7 +845,7 @@ export default function App() {
                   </div>
                   <button
                     onClick={() => fileInputAddRef.current?.click()}
-                    className="p-2 hover:bg-white/5 rounded transition-colors text-white/40"
+                    className="w-11 h-11 flex items-center justify-center border border-white/20 hover:border-brand-blue hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                     aria-label="Replace source image"
                     title="Replace source image"
                   >

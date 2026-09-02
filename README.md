@@ -185,6 +185,7 @@ visionstudio/
 | Background removal stuck on "Processing..."              | First run downloads ~5MB model. Check browser DevTools Network tab. If download fails, check internet connection and try again.                      |
 | Background removal fails with error                      | Browser may not support WebAssembly. Try Chrome/Edge/Firefox latest. Safari should also work.                                                        |
 | Transparency has checkerboard pattern                    | This is the browser's default way of showing transparency. The actual PNG has a true alpha channel - download and open in an image editor to verify. |
+| Safari: "Safari Can't Open the Page" / can't establish a secure connection to `localhost` | Safari force-upgrades the request to `https://`, even if you type `http://` explicitly. Caused by a stale HSTS entry for the bare `localhost` host (left behind by some other local HTTPS dev server you've run before) — the app itself only ever serves plain HTTP. Fix: quit Safari, delete `~/Library/Containers/com.apple.Safari/Data/Library/Caches/WebKit/HSTS/HSTS.plist`, reopen Safari. |
 
 ## Logs
 

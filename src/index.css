@@ -15,7 +15,11 @@ body {
 }
 
 .bg-brand-gradient {
-  background: linear-gradient(100deg, var(--color-brand-blue) 0%, var(--color-brand-purple) 100%);
+  /* Darkened ~28% from --color-brand-blue/--color-brand-purple so white
+     button text clears WCAG AA (4.5:1) across the whole gradient, not just
+     at the lighter end — the raw brand tokens read fine as text-gradient
+     fills but are too light as a fill behind white text. */
+  background: linear-gradient(100deg, #2d43c4 0%, #7d3fc9 100%);
 }
 
 .text-brand-gradient {
@@ -23,4 +27,13 @@ body {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+}
+
+/* Decorative pulse (status dots, loading-dots) is motion for its own sake —
+   drop it under reduced-motion. Spinners (animate-spin) stay: they're
+   functional "operation in progress" feedback, not decoration. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
 }
