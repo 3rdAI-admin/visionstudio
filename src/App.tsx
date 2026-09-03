@@ -706,7 +706,7 @@ export default function App() {
               className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 items-start"
             >
               {/* Controls Sidebar */}
-              <div className="space-y-8 lg:sticky lg:top-24">
+              <div className="order-2 lg:order-1 space-y-8 lg:sticky lg:top-24">
                 <div className="bg-[#161616] border border-white/10 rounded p-6">
                   <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-6">
                     Adjustment Panel
@@ -900,7 +900,7 @@ export default function App() {
               </div>
 
               {/* Canvas Area */}
-              <div className="flex flex-col space-y-4">
+              <div className="order-1 lg:order-2 flex flex-col space-y-4">
                 <div className="relative bg-[#0A0A0A] border border-white/10 rounded aspect-[4/3] flex items-center justify-center p-12 overflow-hidden">
                   <div
                     className="absolute inset-0 opacity-[0.03] pointer-events-none"
