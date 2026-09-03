@@ -605,7 +605,7 @@ export default function App() {
                     if (error) setError(null);
                   }}
                   placeholder="DESCRIBE THE IMAGE TO GENERATE..."
-                  className="w-full h-24 sm:h-28 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/35 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
+                  className="w-full h-24 sm:h-28 bg-[#0A0A0A] border border-white/10 rounded p-4 text-base sm:text-xs font-mono text-white/80 placeholder:text-white/35 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
                 />
                 <p className="text-[10px] text-white/45 mt-2 tracking-wide font-mono text-center">
                   ⌘/Ctrl + ENTER to submit
@@ -721,7 +721,7 @@ export default function App() {
                           if (error) setError(null);
                         }}
                         placeholder="DEFINE TRANSFORMATION..."
-                        className="w-full h-40 bg-[#0A0A0A] border border-white/10 rounded p-4 text-xs font-mono text-white/80 placeholder:text-white/10 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
+                        className="w-full h-40 bg-[#0A0A0A] border border-white/10 rounded p-4 text-base sm:text-xs font-mono text-white/80 placeholder:text-white/10 focus:outline-none focus:border-brand-blue transition-all resize-none uppercase tracking-wider"
                       />
                       <p className="text-[9px] text-white/20 mt-2 tracking-wide font-mono">
                         ⌘/Ctrl + ENTER to submit · ESC to dismiss errors
