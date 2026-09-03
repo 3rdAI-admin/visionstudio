@@ -2,7 +2,18 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (real iPhone rebuilt+reinstalled from current `main` with the correct `VITE_APP_SECRET` — the stale-build issue below is RESOLVED), by session `01PbFrBceHHpLS3N8FhU8pqQ`.
+Last updated: 2026-09-03 (fixed web app on phones over LAN — PR #14 merged, dev servers restarted, `main` is current), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+
+## 🐛 Web app broken when accessed from another device on the LAN — FIXED 2026-09-03 (PR #14, `2c9f783`)
+
+User reported: opening the *web app* (browser, not the native iOS/Electron apps) on their phone — loading the dev frontend at `http://192.168.50.7:3002`, since Vite's dev server binds `--host=0.0.0.0` — failed to process images. Two separate bugs, both needed fixing for LAN browser access to work at all:
+
+- **`src/backendUrl.ts`'s dev fallback was a hardcoded `http://localhost:3001`** baked into the bundle. On a phone's browser, `localhost` means the phone itself, not the Mac serving the page — so every backend call went to nowhere. Fixed: now derived from `window.location.hostname` at runtime (falls back to the literal string `'localhost'` only in non-browser contexts like tests/SSR, where `window` is undefined).
+- **`backend/index.js`'s CORS only allowed the exact configured `FRONTEND_ORIGIN`** (`http://localhost:3002` per `startup.sh`'s local-dev default). A phone's browser sends `Origin: http://192.168.x.x:3002`, which never matched — even after fixing the URL, the backend would've still rejected the request. Fixed: added a `LAN_ORIGIN_PATTERN` regex allowance scoped to RFC1918 private ranges (`10.x`, `172.16-31.x`, `192.168.x`) on the same port the dev frontend runs on — **only active when `HOSTED` is unset**, so a production deployment (`HOSTED=true`, e.g. `vision.th3rdai.com`) stays locked to exactly its configured origin, completely unaffected by this change.
+
+**Verified**: regex tested against public IPs / wrong ports / edge-of-range RFC1918 addresses (all correctly pass/fail), then a real running backend confirmed via `curl` — a LAN-origin request now gets a proper `Access-Control-Allow-Origin` response, the same request against a `HOSTED=true` instance is still correctly rejected, and a request to the frontend via the LAN IP loads successfully. Restarted the user's dev servers (`./startup.sh restart`, with explicit confirmation first since it's their live session) so the fix is live — **the running dev servers on this Mac already reflect this fix**, confirmed by diffing the running `backend/index.js` against the merged commit.
+
+**This was a pre-existing gap, not a regression from recent hardening/geo-block work** — the hardcoded `localhost` and the fixed-origin CORS check both predate this session's other changes; it just hadn't been exercised by a LAN-browser client before (prior testing used the native iOS app, which bakes in `VITE_BACKEND_URL` explicitly, or the Mac's own browser at `localhost`).
 
 ## ⚠️ The physical iPhone is shared state too, not just the git checkout
 
