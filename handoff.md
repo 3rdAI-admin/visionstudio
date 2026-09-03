@@ -2,7 +2,11 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (found and fixed the REAL cause of the iOS app's "Could not reach backend" error — nginx's default 1MB body limit on `vision.th3rdai.com`, not an app/secret/DNS bug), by session `01PbFrBceHHpLS3N8FhU8pqQ`.
+Last updated: 2026-09-03 (✅ user confirmed everything working end-to-end — iOS app, macOS app, web app on both Mac and iPhone), by session `01PbFrBceHHpLS3N8FhU8pqQ`.
+
+## ✅ All platforms confirmed working by the user — 2026-09-03
+
+After the chain of fixes below (nginx body limit, stale localStorage, shared API-key state — PR #15 — plus PR #14's LAN-access fix from a separate session), the user confirmed: the native iOS app, the native macOS app, and the web app (loaded from both the MacBook and the iPhone's browser) all work correctly. This closes out the "Could not reach backend" / "API key required" saga that spanned most of this session — **the actual bugs were the nginx body limit and the duplicate `useApiKey()` hook instances, not anything about the secret, CORS, TLS, or DNS**, all of which were red herrings that looked identical to the user because WKWebView reports every one of those failure modes as the same generic "Load failed" / "API key required" text.
 
 ## 🐛 Hosted backend rejected any real photo upload with 413 — FIXED 2026-09-03 (server config, not a commit)
 
