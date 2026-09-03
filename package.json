@@ -2,7 +2,10 @@
   "name": "visionstudio",
   "private": true,
   "version": "0.0.0",
+  "description": "Browser-based image editor and converter powered by Gemini.",
+  "author": "th3rdai",
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite --port=3002 --host=0.0.0.0",
     "build": "vite build",
@@ -16,7 +19,35 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "e2e:headed": "playwright test --headed"
+    "e2e:headed": "playwright test --headed",
+    "electron:dev": "npm run build && electron electron/main.js",
+    "electron:build": "npm run build && electron-builder"
+  },
+  "build": {
+    "appId": "com.th3rdai.visionstudio",
+    "productName": "VisionStudio",
+    "files": ["dist/**/*", "electron/**/*"],
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": ["**/*", "!.env", "!**/*.backup"]
+      }
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "electron/build"
+    },
+    "mac": {
+      "target": ["dmg", "pkg"],
+      "category": "public.app-category.graphics-design",
+      "icon": "electron/build/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "electron/entitlements.mac.plist",
+      "entitlementsInherit": "electron/entitlements.mac.plist"
+    },
+    "afterSign": "electron/notarize.js"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.1",
@@ -36,6 +67,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.1",
+    "@electron/notarize": "^3.1.1",
     "@playwright/test": "^1.59.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -43,6 +75,8 @@
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
     "jsdom": "^29.1.1",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.1.14",
