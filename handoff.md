@@ -2,7 +2,15 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (PR #13 — hosted-backend hardening — merged to `main` at `dfc94cf`; PR #11 — geo-block fix — merged earlier at `cce2f40`; both confirmed live and working, `main` fast-forwarded cleanly, no divergence), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+Last updated: 2026-09-03 (⚠️ the real iPhone's currently-installed build is stale relative to `main` — see new warning section below), by session `01PbFrBceHHpLS3N8FhU8pqQ`.
+
+## ⚠️ The physical iPhone is shared state too, not just the git checkout
+
+While PR #13 was still open, `01PbFrBceHHpLS3N8FhU8pqQ` rebuilt and reinstalled the app on the user's real iPhone **twice** for two unrelated `main`-branch fixes (an uploaded-photo color bug, an iOS text-input auto-zoom bug). Both rebuilds used `VITE_BACKEND_URL=http://192.168.50.7:3001` (the LAN-dev default, correct at the time since neither PR #11 nor #13 had merged in that session's view) with no `VITE_APP_SECRET` — silently overwriting whatever `01VWQ2iPrjx7eUkMxbcZZdt5` had installed while verifying the hardening on that same device (see "confirmed on the real device" below). Neither session knew the other was also flashing the one physical phone.
+
+**Symptom the user hit**: `Could not reach backend at https://vision.th3rdai.com - Load failed`. Not a bug in the hardening — the phone's install at that moment was either LAN-pointed (never talks to the hosted URL at all) or an older hosted build predating the `X-App-Secret` requirement.
+
+**Where this stands**: PR #13 has merged (`dfc94cf`, includes PR #11's `cce2f40`) — `main` has everything. **Not yet done**: nobody has rebuilt+reinstalled on the real device *since* this merge. Whoever picks this up next: build via `ios/build-release.sh` from current `main` with the real `VITE_APP_SECRET` (see "Secret storage" below), reinstall, confirm — don't assume the phone reflects `main` just because `main` is correct. **Takeaway**: the physical device is exactly as much shared, single-owner-at-a-time state as the git checkout — same "check before you overwrite" discipline applies, and there's no way to inspect what's currently installed short of asking the user or checking whichever session's notes here are freshest.
 
 ## 🔒 Hosted backend hardening (rate limiting + shared app secret) — 2026-09-03
 
