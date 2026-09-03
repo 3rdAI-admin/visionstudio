@@ -2,7 +2,17 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (fixed two TCC hard-crashes on iOS — Save to Photos and Take Photo, both missing Info.plist usage-description keys — with a caching gotcha worth remembering for the next one), by session `01PbFrBceHHpLS3N8FhU8pqQ`.
+Last updated: 2026-09-03 (fixed a regression that broke the macOS Electron app — PR #21, confirmed working by the user on a rebuilt package), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+
+## 🐛 macOS Electron app broken by an earlier fix, same day — FIXED and confirmed by user (PR #21)
+
+The LAN-browser-access fix from earlier today (PR #14) made the local-dev backend URL derive from `window.location.hostname` instead of a hardcoded `'localhost'`. That broke Electron: it loads the UI via `loadFile()` (`file://`), where `window.location.hostname` is `''`, not `'localhost'` — so the resolved URL became the malformed `http://:3001`, and `fetch()` correctly rejected it with `Failed to parse URL from http://:3001/api/generate`. User hit this immediately after the PR #14/rebuild cycle earlier.
+
+**Fix**: `src/backendUrl.ts`'s `DEV_DEFAULT` now falls back to `'localhost'` whenever `hostname` is empty (the `file://` case), not just when `window` itself is `undefined` (the original SSR/test guard). LAN access from a real browser is unaffected — a real page always has a non-empty hostname.
+
+**Verified two ways, not just by re-reading the code**: (1) a temporary debug log confirmed `DEV_DEFAULT` resolves to `http://localhost:3001` when `hostname` is empty; (2) ran the actual unmodified Electron app on its real port (briefly stopped the local web dev server to free port 3001, restored after) and confirmed via the backend's request log that the app's request landed correctly. Rebuilt a fresh `.dmg`/`.pkg` afterward and **the user confirmed it's working** on their real Mac.
+
+**Takeaway for future LAN/native-URL work**: this repo now has three different "what page loaded me" contexts that all need to resolve a sane backend URL — a real browser (`http://`, real hostname), Capacitor's iOS WebView (a fixed native scheme, handled via `VITE_BACKEND_URL` baked in at build time so it never hits `DEV_DEFAULT` at all), and Electron's `file://` page (empty hostname). Any future change to `src/backendUrl.ts`'s fallback logic should be checked against all three, not just the browser case — this exact bug (fix one, break another) is easy to repeat.
 
 ## 🐛 Two TCC hard-crashes on iOS — FIXED 2026-09-03 (PR #19, PR #22) — read this before adding any privacy-sensitive API
 
