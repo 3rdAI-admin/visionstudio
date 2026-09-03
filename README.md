@@ -192,3 +192,71 @@ visionstudio/
 ## Logs
 
 Backend logs every request (timestamp, method, path, status, duration, response bytes). If you start it with `nohup node index.js > /tmp/visionstudio-backend.log 2>&1 &`, tail that file. Otherwise it's stdout.
+
+## iOS app (Capacitor)
+
+VisionStudio also ships as a native iOS app via [Capacitor](https://capacitorjs.com), wrapping the same `dist/` build. Xcode project: `ios/App/App.xcodeproj`. Bundle ID: `com.th3rdai.visionstudio`.
+
+### Build and sync
+
+The native app needs a backend it can actually reach — `localhost` doesn't resolve on a device/simulator the way it does in a browser, so point the build at your Mac's LAN IP:
+
+```bash
+# Find your Mac's LAN IP
+ipconfig getifaddr en0
+
+# Build the frontend with that IP baked in, then sync into the Xcode project
+VITE_BACKEND_URL=http://<your-lan-ip>:3001 npm run build
+npx cap sync ios
+```
+
+`ios/App/App/public/` (Capacitor's copy of `dist/`) is gitignored — always re-run the above before opening Xcode if it might be stale. Both the Mac (running `./startup.sh start`) and the device must be on the **same Wi-Fi network** — the simulator shares the Mac's network stack automatically, but a real device does not.
+
+### Run in Simulator
+
+Open `ios/App/App.xcodeproj` in Xcode, pick a simulator, and hit Run — no extra signing setup needed.
+
+### Run on a real device
+
+Real-device builds need a development team, which isn't set in the checked-in `.pbxproj`:
+
+```bash
+xcodebuild -project ios/App/App.xcodeproj -scheme App \
+  -destination 'generic/platform=iOS' \
+  DEVELOPMENT_TEAM=<your-team-id> \
+  -allowProvisioningUpdates archive ...
+# or simplest: open the project in Xcode, select your device as the run
+# destination, and set the team under Signing & Capabilities — Xcode
+# handles automatic provisioning from there.
+```
+
+To install and launch without Xcode's UI (e.g. from a script), use `devicectl`:
+
+```bash
+xcrun devicectl list devices    # find your device's CoreDevice identifier
+xcrun devicectl device install app --device <coredevice-id> <path-to-.app>
+xcrun devicectl device process launch --device <coredevice-id> com.th3rdai.visionstudio
+```
+
+`xcrun xctrace list devices` can show a stale "Offline" status for a device that's actually connected — trust `devicectl`'s view over `xctrace`'s if they disagree.
+
+`ios/App/App/Info.plist` has an ATS exception (`NSAllowsLocalNetworking`) to permit plain-HTTP LAN traffic to the dev backend. That's dev-only — don't widen it to `NSAllowsArbitraryLoads` as a shortcut for a hosted backend; use real HTTPS instead (see below).
+
+## Hosted / production backend (`HOSTED=true`)
+
+By default the backend runs in local-dev mode: it accepts a shared key from `backend/.env` and exposes `POST /api/restart` (used by the Settings UI to restart the backend after a port change). Neither is appropriate for a backend reachable from the internet.
+
+Set `HOSTED=true` in the deployment's environment to disable both:
+
+- `/api/restart` is not registered at all (no self-restart endpoint exposed publicly).
+- The `.env` shared-key fallback is disabled — every request **must** include its own `X-API-Key` header with a caller-supplied Gemini API key. There's no `GOOGLE_API_KEY` on a hosted server.
+
+```bash
+# systemd unit env file, e.g. /etc/visionstudio-backend.env
+HOSTED=true
+PORT=3011
+```
+
+Deploy like any other Node service behind a reverse proxy: app in `/opt/<name>`, secrets in a root-only env file (`chmod 600`), a systemd unit, nginx reverse-proxy + Let's Encrypt. **Do not set `MemoryDenyWriteExecute=true`** in the systemd unit's hardening block — it crashes Node with a fatal V8 OOM (JIT needs executable-memory allocation that directive blocks); every other hardening directive is fine.
+
+Note: Google's Gemini API has been observed geo/IP-reputation-blocking requests from at least one datacenter IP range ("User location is not supported for the API use.") even with a valid key that works fine from a residential/office IP. Verify a hosted deployment can actually reach `generativelanguage.googleapis.com` before assuming a `HOSTED=true` deploy is fully working end-to-end.

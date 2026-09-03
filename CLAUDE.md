@@ -2,6 +2,8 @@
 
 Browser-based image editor + converter. **React 18 + TypeScript + Vite** frontend, **Node + Express** backend that proxies Google's `gemini-2.5-flash-image` (Nano Banana). See `README.md` for setup/run/API.
 
+Also ships as a native iOS app via Capacitor (`ios/App/App.xcodeproj`, bundle id `com.th3rdai.visionstudio`), and the backend supports a `HOSTED=true` production mode for public deployment (disables `/api/restart` and the shared `.env` key fallback — every caller sends its own `X-API-Key`). See `README.md` § "iOS app (Capacitor)" and § "Hosted / production backend" for the full build/deploy steps — don't re-derive them from scratch.
+
 ## Stack — what this project actually is
 
 - **NOT** Python. Do not suggest `pip`, `pytest`, `pydantic`, `FastAPI`, `SQLAlchemy`, or virtual envs.
