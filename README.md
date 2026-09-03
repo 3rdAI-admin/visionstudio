@@ -259,7 +259,9 @@ PORT=3011
 
 Deploy like any other Node service behind a reverse proxy: app in `/opt/<name>`, secrets in a root-only env file (`chmod 600`), a systemd unit, nginx reverse-proxy + Let's Encrypt. **Do not set `MemoryDenyWriteExecute=true`** in the systemd unit's hardening block — it crashes Node with a fatal V8 OOM (JIT needs executable-memory allocation that directive blocks); every other hardening directive is fine.
 
-Note: Google's Gemini API has been observed geo/IP-reputation-blocking requests from at least one datacenter IP range ("User location is not supported for the API use.") even with a valid key that works fine from a residential/office IP. Verify a hosted deployment can actually reach `generativelanguage.googleapis.com` before assuming a `HOSTED=true` deploy is fully working end-to-end.
+Note: Google's Gemini API has been observed geo/IP-reputation-blocking requests from at least one datacenter IP range ("User location is not supported for the API use.") even with a valid key that works fine from a residential/office IP. **This isn't a Linode-wide issue** — it was specific to the `us-lax` (Los Angeles) region; a `us-east` (Newark, NJ) Linode reaches `generativelanguage.googleapis.com` fine. Verify a hosted deployment can actually reach `generativelanguage.googleapis.com` before assuming a `HOSTED=true` deploy is fully working end-to-end — a quick check: `curl -s https://generativelanguage.googleapis.com/v1beta/models?key=$GOOGLE_API_KEY` from the server itself should return a model list, not an error.
+
+`vision.th3rdai.com` is live and reachable from anywhere with internet access — the iOS app's release build (`npm run build:ios:release`) defaults to this URL, so a distributed `.ipa` doesn't require the Mac or the LAN to be running.
 
 ## macOS app auto-updates
 
