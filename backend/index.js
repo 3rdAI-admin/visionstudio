@@ -20,7 +20,15 @@ const NATIVE_ORIGINS = ['capacitor://localhost', 'ionic://localhost'];
 const webOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
 app.use(
   cors({
-    origin: [webOrigin, ...NATIVE_ORIGINS],
+    // The Electron desktop app loads the UI via loadFile() (a file:// page),
+    // which sends no Origin header (or "null") on same-process fetches — allow
+    // that alongside the configured web origin and Capacitor's native schemes.
+    origin: (origin, callback) => {
+      if (!origin || origin === 'null' || [webOrigin, ...NATIVE_ORIGINS].includes(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error('Not allowed by CORS'));
+    },
   }),
 );
 // Images sent as base64 are large — bump default 100KB limit.

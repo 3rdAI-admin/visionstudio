@@ -5,7 +5,7 @@ node_modules/
 
 # Build
 dist/
-build/
+/build/
 
 # Test artifacts
 playwright-report/
@@ -43,6 +43,11 @@ lerna-debug.log*
 
 # startup.sh runtime state
 .run/
+
+# Electron desktop app — electron-builder's packaged .dmg/.pkg output.
+# electron/build/icon.icns is a tracked, generated-but-committed source asset
+# (icon conversion needs sharp/librsvg, shouldn't gate a release build).
+release/
 
 # iOS (Capacitor/Xcode) — ios/ itself is tracked (native project source),
 # but not build products, user-specific settings, or SPM's resolved cache.
