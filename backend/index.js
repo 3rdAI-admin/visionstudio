@@ -13,7 +13,16 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // anyone burn the deployer's own Gemini quota with no key of their own.
 const HOSTED = process.env.HOSTED === 'true';
 
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000' }));
+// Capacitor's iOS WebView serves the app from a fixed native scheme, not an
+// http(s) origin — allow those alongside the configurable web origin so the
+// same backend serves both the dev web app and the native iOS build.
+const NATIVE_ORIGINS = ['capacitor://localhost', 'ionic://localhost'];
+const webOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+app.use(
+  cors({
+    origin: [webOrigin, ...NATIVE_ORIGINS],
+  }),
+);
 // Images sent as base64 are large — bump default 100KB limit.
 app.use(express.json({ limit: '25mb' }));
 

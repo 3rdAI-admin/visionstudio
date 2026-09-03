@@ -422,8 +422,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0F0F0F] text-[#E0E0E0] font-sans selection:bg-white selection:text-black">
-      {/* Header */}
-      <header className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-30 flex items-center px-6">
+      {/* Header — safe-area padding-top so the sticky bar clears the iOS
+          status bar/notch in the native (Capacitor) build; a no-op on web,
+          where env(safe-area-inset-top) is 0. */}
+      <header
+        className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-30 flex items-center px-6"
+        style={{ paddingTop: 'env(safe-area-inset-top)', height: 'calc(3.5rem + env(safe-area-inset-top))' }}
+      >
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <img src={logoEye} className="w-6 h-6 object-contain" alt="Th3rdAI" />

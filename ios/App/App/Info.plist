@@ -24,6 +24,15 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Dev-only: the backend runs unhosted on the LAN (plain HTTP) until
+		     Track 1 (hosting) ships a real HTTPS endpoint set via
+		     VITE_BACKEND_URL. Local-network exception only — does not permit
+		     arbitrary internet HTTP. -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
