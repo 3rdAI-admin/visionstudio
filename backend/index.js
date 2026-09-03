@@ -38,13 +38,30 @@ const APP_SECRET = process.env.APP_SECRET;
 // same backend serves both the dev web app and the native iOS build.
 const NATIVE_ORIGINS = ['capacitor://localhost', 'ionic://localhost'];
 const webOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+const FRONTEND_PORT = new URL(webOrigin).port || '3000';
+
+// Local dev's Vite server binds --host=0.0.0.0 so another device on the LAN
+// (e.g. a phone) can load it at http://<mac-lan-ip>:3002 — that request's
+// Origin won't match the fixed localhost webOrigin above. Only relevant in
+// dev (HOSTED=true locks this down to exactly webOrigin, as intended for a
+// deployment reachable by strangers): matches a private RFC1918 IP on the
+// same port the dev frontend runs on.
+const LAN_ORIGIN_PATTERN = HOSTED
+  ? null
+  : new RegExp(`^https?://(10\\.|172\\.(1[6-9]|2\\d|3[01])\\.|192\\.168\\.)[\\d.]+:${FRONTEND_PORT}$`);
+
 app.use(
   cors({
     // The Electron desktop app loads the UI via loadFile() (a file:// page),
     // which sends no Origin header (or "null") on same-process fetches — allow
     // that alongside the configured web origin and Capacitor's native schemes.
     origin: (origin, callback) => {
-      if (!origin || origin === 'null' || [webOrigin, ...NATIVE_ORIGINS].includes(origin)) {
+      if (
+        !origin ||
+        origin === 'null' ||
+        [webOrigin, ...NATIVE_ORIGINS].includes(origin) ||
+        (LAN_ORIGIN_PATTERN && LAN_ORIGIN_PATTERN.test(origin))
+      ) {
         return callback(null, true);
       }
       callback(new Error('Not allowed by CORS'));
