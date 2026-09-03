@@ -1033,6 +1033,11 @@ export default function App() {
                     </div>
                   )}
                 </div>
+                {editedImage && Capacitor.isNativePlatform() && !compareMode && (
+                  <p className="px-2 mt-2 text-[9px] uppercase tracking-widest text-white/25 font-mono">
+                    Tip: press and hold the image above to Save, Copy, or Share directly
+                  </p>
+                )}
               </div>
             </motion.div>
           )}
