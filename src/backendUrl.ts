@@ -17,9 +17,13 @@ const BUILD_DEFAULT = import.meta.env.VITE_BACKEND_URL as string | undefined;
 // from another device on the LAN loading the dev server's --host=0.0.0.0
 // address (e.g. a phone browsing to http://192.168.x.x:3002) — a hardcoded
 // 'localhost' would resolve to the phone itself in that case, not the Mac.
-// `window` is undefined in non-browser contexts (SSR/tests), hence the guard.
+// Electron loads the UI via loadFile() (a file:// page), where
+// window.location.hostname is '' — falls back to 'localhost' there, same
+// as the non-browser (SSR/test) case where `window` itself is undefined.
 const DEV_DEFAULT =
-  typeof window !== 'undefined' ? `http://${window.location.hostname}:3001` : 'http://localhost:3001';
+  typeof window !== 'undefined' && window.location.hostname
+    ? `http://${window.location.hostname}:3001`
+    : 'http://localhost:3001';
 
 // Shared "this request came from a real copy of the app" secret, baked in
 // at build time via VITE_APP_SECRET (see ios/build-release.sh — the only
