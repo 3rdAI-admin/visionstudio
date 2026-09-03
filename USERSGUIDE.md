@@ -284,7 +284,7 @@ Pro tip: Experiment with different prompts knowing you can always undo!
 
 ### Q: Can I edit the same image multiple times?
 
-**A:** Yes! After uploading an image, you can apply multiple different prompts. Each edit starts from the original, not the previous edit. To edit an already-edited image, click "Export Image" to download it, then re-upload the edited version.
+**A:** Yes! Each new prompt builds on your most recent result, so you can keep refining an image through as many prompts as you like — add neon lighting, then make it black and white, then add a vignette, each one applying on top of the last. Use Undo (⌘Z) to step back to an earlier point in the chain and branch off from there instead, or "Reset Workspace" to start completely over from the original upload.
 
 ### Q: What happens if I close the browser?
 

@@ -71,6 +71,15 @@ function extractFriendlyError(raw: string): string {
     .slice(0, 240);
 }
 
+// Splits a data: URL (e.g. from editedImage) back into the raw base64
+// payload + mimeType shape the backend expects, mirroring how a freshly
+// uploaded file is parsed in processImageFile.
+function parseDataUrl(dataUrl: string): ImageState {
+  const [header, data] = dataUrl.split(',');
+  const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+  return { data, mimeType };
+}
+
 // Canvas-based downscale. Preserves PNG transparency (re-encodes as PNG when
 // the source is PNG; otherwise uses JPEG at high quality to keep bytes small).
 async function resizeImageIfNeeded(file: File): Promise<File> {
@@ -312,6 +321,10 @@ export default function App() {
     setIsProcessing(true);
     setError(null);
     try {
+      // Chain from the most recent result so successive prompts build on
+      // each other, not just the original upload — falls back to the
+      // original when there's no edit yet (the first prompt).
+      const sourceImage = editedImage ? parseDataUrl(editedImage) : originalImage;
       const response = await fetch(getBackendUrl('/api/generate'), {
         method: 'POST',
         headers: {
@@ -320,7 +333,7 @@ export default function App() {
           ...(apiKeyHook.apiKey && { 'X-API-Key': apiKeyHook.apiKey }),
         },
         body: JSON.stringify({
-          image: { data: originalImage.data, mimeType: originalImage.mimeType },
+          image: { data: sourceImage.data, mimeType: sourceImage.mimeType },
           prompt,
         }),
       });
