@@ -13,7 +13,7 @@
 Th3rdAI Vision Studio is a browser-based AI-powered image editing and conversion tool that allows users to transform images using natural language prompts and perform intelligent background removal. The application provides a simple, accessible interface for both casual users and professionals to edit images without requiring technical skills or expensive desktop software.
 
 ### 1.2 Goals
-- **Primary goal:** Enable users to edit images using natural language prompts with real-time AI processing (Google Gemini 2.5 Flash Image)
+- **Primary goal:** Enable users to edit images using natural language prompts with real-time AI processing (Nano Banana / Gemini 2.5 Flash Image)
 - **Secondary goals:**
   - Provide one-click background removal with true alpha channel transparency
   - Offer preset style macros for common editing tasks (vintage, futuristic, cinematic, etc.)
@@ -56,7 +56,7 @@ Image editing traditionally requires expensive software (Adobe Photoshop $54.99/
 - **Stakeholders:**
   - Th3rdAI (product owner, brand)
   - End users (experience quality, privacy)
-  - Google (Gemini API usage and billing)
+  - Google (Nano Banana API usage and billing)
 
 ---
 
@@ -67,7 +67,7 @@ Image editing traditionally requires expensive software (Adobe Photoshop $54.99/
 |----|-------------|----------|
 | FR-1 | Users can upload images via drag-and-drop or file browser (PNG, JPG, JPEG, WebP) | Must |
 | FR-2 | Users can enter natural language prompts to describe desired edits | Must |
-| FR-3 | System sends image + prompt to Google Gemini 2.5 Flash Image API and displays result | Must |
+| FR-3 | System sends image + prompt to the Nano Banana (Gemini 2.5 Flash Image) API and displays result | Must |
 | FR-4 | Users can remove backgrounds with one click to produce true transparent PNGs | Must |
 | FR-5 | Application provides preset macros (Future Vibe, Vintage Film, Cinematic, 3D Depth, Cartoonize) | Should |
 | FR-6 | Users can compare original vs. edited images with a slider | Should |
@@ -81,14 +81,14 @@ Image editing traditionally requires expensive software (Adobe Photoshop $54.99/
 ### 3.2 Non-Functional Requirements
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| NFR-1 | **Security:** API key never exposed to browser; all Gemini calls proxied through backend | Must |
+| NFR-1 | **Security:** API key never exposed to browser; all Nano Banana calls proxied through backend | Must |
 | NFR-2 | **Privacy:** No image uploads stored on server or cloud; all processing is ephemeral | Must |
 | NFR-3 | **Performance:** Background removal runs entirely client-side (no server latency) | Must |
 | NFR-4 | **Performance:** Image edits complete within 3-10 seconds depending on complexity | Should |
 | NFR-5 | **Reliability:** Friendly error messages extracted from SDK errors for user clarity | Must |
 | NFR-6 | **Accessibility:** UI works on modern browsers (Chrome, Firefox, Edge, Safari) | Must |
 | NFR-7 | **Scalability:** Backend handles CORS properly and limits body size to 25MB | Must |
-| NFR-8 | **Cost:** Uses Google Gemini free tier when possible; backend logs all API calls for monitoring | Should |
+| NFR-8 | **Cost:** Uses Nano Banana's free tier when possible; backend logs all API calls for monitoring | Should |
 | NFR-9 | **UX:** First background removal downloads ~5MB model, then works offline from cache | Should |
 | NFR-10 | **Maintainability:** Codebase remains modular; no single file exceeds 500 lines | Should |
 
@@ -109,9 +109,9 @@ Image editing traditionally requires expensive software (Adobe Photoshop $54.99/
 
 ### 4.1 In Scope
 - Single-page React application with TypeScript
-- Express backend proxy for Gemini API
+- Express backend proxy for the Nano Banana API
 - Drag-and-drop file upload
-- Natural language image editing via Gemini 2.5 Flash Image
+- Natural language image editing via Nano Banana (Gemini 2.5 Flash Image)
 - Client-side background removal with @imgly/background-removal
 - Preset style macros and format conversion prompts
 - Before/after comparison slider
@@ -134,9 +134,9 @@ Image editing traditionally requires expensive software (Adobe Photoshop $54.99/
 ### 4.3 Constraints & Assumptions
 
 **Constraints:**
-- **Technical:** Gemini API inline-data limit is ~7MB (requires client-side auto-resize)
+- **Technical:** Nano Banana API inline-data limit is ~7MB (requires client-side auto-resize)
 - **Technical:** Background removal model is ~5MB and downloads on first use
-- **Cost:** Free tier Gemini API has rate limits (15 RPM, 1,500 RPD, 1,500,000 TPD)
+- **Cost:** Free tier Nano Banana API has rate limits (15 RPM, 1,500 RPD, 1,500,000 TPD)
 - **Time:** Backend must restart to pick up .env changes (no hot reload)
 - **Platform:** Requires Node.js ≥18, modern browser with WebAssembly support
 
@@ -144,8 +144,8 @@ Image editing traditionally requires expensive software (Adobe Photoshop $54.99/
 - Users have stable internet connection for initial model downloads
 - Users understand that first background removal takes longer (model download)
 - Users are comfortable with browser-based tools (no desktop app needed)
-- Google Gemini 2.5 Flash Image API remains available and pricing stable
-- Users have valid Gemini API key (free tier sufficient for personal use)
+- Nano Banana (Gemini 2.5 Flash Image) API remains available and pricing stable
+- Users have a valid Nano Banana API Key (free tier sufficient for personal use)
 
 ---
 
@@ -168,16 +168,16 @@ Image editing traditionally requires expensive software (Adobe Photoshop $54.99/
 
 ### 5.3 Key Differentiators
 - **Privacy-first:** No uploads stored, background removal runs client-side
-- **Free/low-cost:** Uses Google Gemini free tier, no subscription required
-- **Speed:** Gemini 2.5 Flash Image is optimized for fast generation
+- **Free/low-cost:** Uses Nano Banana's free tier, no subscription required
+- **Speed:** Nano Banana (Gemini 2.5 Flash Image) is optimized for fast generation
 - **Simplicity:** Single-page app, no installation, no account needed
 - **True transparency:** Background removal produces alpha channel PNGs, not checkerboards
 
 ### 5.4 Known Issues & Mitigations
 | Issue | Root Cause | Mitigation |
 |-------|-----------|------------|
-| Phone photos (5-12MB) fail | Gemini 7MB limit | Auto-resize to 2048px / 4MB before upload |
-| Checkerboard instead of transparency | Gemini draws visual patterns | Use @imgly/background-removal library |
+| Phone photos (5-12MB) fail | Nano Banana 7MB limit | Auto-resize to 2048px / 4MB before upload |
+| Checkerboard instead of transparency | Nano Banana draws visual patterns | Use @imgly/background-removal library |
 | API_KEY_INVALID errors | Placeholder key in .env | Validate key length (39 chars) and format |
 | CORS errors | Backend missing middleware | Use `cors({ origin: 'http://localhost:3000' })` |
 | First background removal slow | Model download (~5MB) | Show progress indicator, cache model in browser |
@@ -353,7 +353,7 @@ npm run dev
 - **Environment Variables:** `backend/.env` with valid GOOGLE_API_KEY
 - **API Key Security:** Never commit .env to git; use .gitignore
 - **CORS:** Update allowed origin from localhost to production domain
-- **Rate Limiting:** Monitor Gemini API usage (15 RPM free tier limit)
+- **Rate Limiting:** Monitor Nano Banana API usage (15 RPM free tier limit)
 - **Logging:** Backend logs all requests (timestamp, method, path, status, duration, bytes)
 - **Error Monitoring:** Track API errors and client-side exceptions
 
@@ -434,7 +434,7 @@ API key not valid. Please pass a valid API key.
 |-----------|-----------|-------|
 | Image upload | <1s | Instant for <5MB images |
 | Auto-resize | 1-2s | For 5-12MB phone photos |
-| Gemini API call | 3-10s | Varies by complexity |
+| Nano Banana API call | 3-10s | Varies by complexity |
 | Background removal (first) | 8-15s | Includes model download |
 | Background removal (cached) | 3-5s | Model already downloaded |
 | Download result | <1s | Instant |
@@ -443,7 +443,7 @@ API key not valid. Please pass a valid API key.
 
 ## Appendix C: Cost Estimate
 
-**Google Gemini 2.5 Flash Image (Free Tier):**
+**Nano Banana / Gemini 2.5 Flash Image (Free Tier):**
 - 15 requests per minute (RPM)
 - 1,500 requests per day (RPD)
 - 1,500,000 tokens per day (TPD)

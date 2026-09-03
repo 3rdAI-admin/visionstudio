@@ -31,14 +31,14 @@ This guide covers the **web app**, run locally as described below. VisionStudio 
 
 ## 🔑 Managing Your API Key
 
-VisionStudio can use either a shared backend API key or your personal Google Gemini API key.
+VisionStudio can use either a shared backend API key or your personal Nano Banana API Key.
 
 ### To add your own key:
 
-1. Get a free API key from https://aistudio.google.com/apikey
+1. Get a free Nano Banana API Key from https://aistudio.google.com/apikey
 2. Click the Settings icon (⚙️) in the top-right corner
-3. Paste your API key (it should start with "AIzaSy" and be 39 characters)
-4. Click "Test Key" to verify it works
+3. Paste your key (it should start with "AIzaSy" and be 39 characters)
+4. Click "Test Nano Banana API Key" to verify it works
 5. Click "Save"
 
 ### Security considerations:
@@ -51,7 +51,7 @@ VisionStudio can use either a shared backend API key or your personal Google Gem
 ### To remove your key:
 
 1. Click Settings (⚙️)
-2. Click "Remove Key"
+2. Click "Remove Nano Banana API Key"
 3. Your key is deleted from browser storage
 
 ---
@@ -303,7 +303,7 @@ Pro tip: Experiment with different prompts knowing you can always undo!
 **A:**
 
 - Background removal works offline (after first download)
-- Image editing requires internet (connects to Gemini API)
+- Image editing requires internet (connects to the Nano Banana API)
 - You need the backend server running locally
 
 ### Q: What's the maximum file size?
@@ -346,7 +346,7 @@ Pro tip: Experiment with different prompts knowing you can always undo!
 
 ### Q: Can I use this for commercial projects?
 
-**A:** Check the Gemini API terms of service for commercial use. The tool itself is for local use.
+**A:** Check the Nano Banana (Gemini API) terms of service for commercial use. The tool itself is for local use.
 
 ---
 

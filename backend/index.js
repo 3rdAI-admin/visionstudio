@@ -167,15 +167,15 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     if (!apiKey) {
       return res.status(400).json({
         error: HOSTED
-          ? 'API key required. Add an X-API-Key header with your own Gemini API key.'
-          : 'API key required. Add X-API-Key header or set GOOGLE_API_KEY in .env'
+          ? 'Nano Banana API Key required. Add an X-API-Key header with your own Nano Banana API Key.'
+          : 'Nano Banana API Key required. Add X-API-Key header or set GOOGLE_API_KEY in .env'
       });
     }
 
     // Validate API key format (39 chars starting with AIzaSy)
     if (!/^AIzaSy[A-Za-z0-9_-]{33}$/.test(apiKey)) {
       return res.status(400).json({
-        error: 'Invalid API key format. Expected 39 characters starting with AIzaSy'
+        error: 'Invalid Nano Banana API Key format. Expected 39 characters starting with AIzaSy'
       });
     }
 

@@ -514,12 +514,12 @@ export default function App() {
                 }`}
                 title={
                   apiKeyHook.status === 'valid'
-                    ? 'Browser API key set'
+                    ? 'Browser Nano Banana API Key set'
                     : apiKeyHook.status === 'invalid'
-                      ? 'Invalid API key'
+                      ? 'Invalid Nano Banana API Key'
                       : apiKeyHook.serverKeyConfigured
-                        ? 'Using server-configured key (.env)'
-                        : 'No API key set'
+                        ? 'Using server-configured Nano Banana API Key (.env)'
+                        : 'No Nano Banana API Key set'
                 }
               />
             </button>
@@ -1038,7 +1038,7 @@ export default function App() {
                         Engine
                       </span>
                       <p className="text-[10px] uppercase font-mono text-white/40 tracking-wider">
-                        Gemini 2.5 Flash Image
+                        Nano Banana (Gemini 2.5 Flash Image)
                       </p>
                     </div>
                     <div className="space-y-1">

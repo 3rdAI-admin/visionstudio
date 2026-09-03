@@ -26,7 +26,7 @@ export interface UseApiKeyReturn {
 }
 
 /**
- * Custom hook for managing Gemini API key with localStorage persistence.
+ * Custom hook for managing the Nano Banana API key with localStorage persistence.
  * Provides validation, testing, and secure storage for BYOK pattern.
  *
  * @returns Object with API key state, status, and management functions

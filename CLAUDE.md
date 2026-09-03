@@ -2,25 +2,25 @@
 
 Browser-based image editor + converter. **React 18 + TypeScript + Vite** frontend, **Node + Express** backend that proxies Google's `gemini-2.5-flash-image` (Nano Banana). See `README.md` for setup/run/API.
 
-Also ships as a native iOS app via Capacitor (`ios/App/App.xcodeproj`, bundle id `com.th3rdai.visionstudio`) and a native macOS app via Electron (`electron/`, same bundle id, auto-updates from GitHub Releases). The backend supports a `HOSTED=true` production mode for public deployment (disables `/api/restart` and the shared `.env` key fallback — every caller sends its own `X-API-Key`; optionally also gated by a shared `APP_SECRET`/`X-App-Secret` header and per-IP rate limiting on `/api/generate` — see below). A real hosted instance is live at `https://vision.th3rdai.com` (Linode, `us-east`/Newark — **not** `us-lax`, which Gemini's API geo-blocks). See `README.md` §§ "iOS app (Capacitor)", "macOS app auto-updates", and "Hosted / production backend" for the full build/deploy steps — don't re-derive them from scratch.
+Also ships as a native iOS app via Capacitor (`ios/App/App.xcodeproj`, bundle id `com.th3rdai.visionstudio`) and a native macOS app via Electron (`electron/`, same bundle id, auto-updates from GitHub Releases). The backend supports a `HOSTED=true` production mode for public deployment (disables `/api/restart` and the shared `.env` key fallback — every caller sends its own `X-API-Key`; optionally also gated by a shared `APP_SECRET`/`X-App-Secret` header and per-IP rate limiting on `/api/generate` — see below). A real hosted instance is live at `https://vision.th3rdai.com` (Linode, `us-east`/Newark — **not** `us-lax`, which the Nano Banana API geo-blocks). See `README.md` §§ "iOS app (Capacitor)", "macOS app auto-updates", and "Hosted / production backend" for the full build/deploy steps — don't re-derive them from scratch.
 
 ## Stack — what this project actually is
 
 - **NOT** Python. Do not suggest `pip`, `pytest`, `pydantic`, `FastAPI`, `SQLAlchemy`, or virtual envs.
-- **NOT** an agent framework / LLM application — it is a single-purpose image editor that calls one Gemini endpoint + client-side background removal.
+- **NOT** an agent framework / LLM application — it is a single-purpose image editor that calls one Nano Banana endpoint + client-side background removal.
 - Frontend: React 18 + TypeScript, Vite 6, Tailwind utility classes (inlined; no `tailwind.config`), `motion/react` for animations, `lucide-react` for icons, `@imgly/background-removal` for client-side background removal.
 - Backend: plain Express in one file (`backend/index.js`), `@google/generative-ai@0.24.1`, `express-rate-limit`. Endpoints: `GET /api/key-status`, `POST /api/generate` (rate-limited), `POST /api/restart` (dev-only, not registered when `HOSTED=true`), plus the implicit `OPTIONS /` CORS preflight.
 - Two `package.json`s: project root (frontend) and `backend/` (backend). They are independent — `npm install` in one does not affect the other.
 
 ## Conventions
 
-- **Single source of truth for the API key**: `backend/.env` → `GOOGLE_API_KEY`. Never reference it in `src/`. Frontend has no `.env` and should not gain one — that would re-introduce the bug where the key shipped to the browser.
-- **All Gemini calls go through the backend**, never directly from the React app. The browser must not import `@google/generative-ai`.
+- **Single source of truth for the Nano Banana API Key**: `backend/.env` → `GOOGLE_API_KEY`. Never reference it in `src/`. Frontend has no `.env` and should not gain one — that would re-introduce the bug where the key shipped to the browser.
+- **All Nano Banana calls go through the backend**, never directly from the React app. The browser must not import `@google/generative-ai`.
 - **Background removal runs client-side**: The `@imgly/background-removal` library runs entirely in the browser using WebAssembly. First use downloads a ~5MB model that's cached. No backend or API key needed.
 - **Image data is base64**, no `data:` prefix, paired with `mimeType`. Both directions (request + response) follow this shape — see `README.md` § API contract.
 - **Logos** are imported from `../assets/` (project root) — currently `VisionStudio-mark-only.svg` (`src/App.tsx`'s `logoEye`), vector so no size/first-paint concern like the old flattened PNGs had. `index.html`'s `<link rel="icon">` still points at `/assets/Digital_Eye_icon.png`, a file the 2026-09-03 rebrand deleted — **the favicon is currently broken** (404s); not yet fixed as of this note, flag it if you touch `index.html` or the asset pipeline.
 - **Backend logs every request** via the inline middleware in `index.js` (`console.log` of timestamp + method + path + status + duration + bytes). Don't replace with morgan/winston unless there's a specific reason.
-- **Image input is auto-resized** in `App.tsx` `resizeImageIfNeeded()` before being sent to the backend: max `MAX_DIM` (2048 px on the long edge) and max `MAX_BYTES` (4 MB). PNGs stay PNG; everything else recompresses to JPEG @ 0.92. Don't lift these limits without checking Gemini's current inline-data cap (~7 MB at time of writing).
+- **Image input is auto-resized** in `App.tsx` `resizeImageIfNeeded()` before being sent to the backend: max `MAX_DIM` (2048 px on the long edge) and max `MAX_BYTES` (4 MB). PNGs stay PNG; everything else recompresses to JPEG @ 0.92. Don't lift these limits without checking Nano Banana's current inline-data cap (~7 MB at time of writing).
 - **Error messages** flow through `extractFriendlyError()` (frontend) and `friendlyError()` (backend) so users never see `"[GoogleGenerativeAI Error]: Error fetching from https://... [400 Bad Request] ..."`. Both functions strip the SDK envelope to surface just the human sentence. If you add a new error path, run it through these helpers.
 
 ## Things that have broken before — don't repeat

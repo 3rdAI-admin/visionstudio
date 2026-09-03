@@ -13,7 +13,7 @@ Browser-based image editor and converter that transforms images via natural-lang
 - ↩️ **Undo/Redo** - Navigate through edit history with ⌘Z / ⌘⇧Z shortcuts or UI buttons (up to 50 states)
 - ↔️ **Before / After Compare** - Drag a slider over the result to reveal the original underneath
 - ⌨️ **Keyboard Shortcuts** - `⌘/Ctrl + Enter` submits prompt; `Esc` dismisses errors; `⌘/Ctrl + Z` undo; `⌘/Ctrl + Shift + Z` redo
-- 🪶 **Auto-Resize** - Large uploads (> 2048px or > 4 MB) are downscaled in the browser before being sent, so phone photos don't blow Gemini's 7 MB inline-data limit
+- 🪶 **Auto-Resize** - Large uploads (> 2048px or > 4 MB) are downscaled in the browser before being sent, so phone photos don't blow Nano Banana's 7 MB inline-data limit
 - 🖱️ **Drag & Drop** - Upload images by dragging into the browser
 - 📊 **Real Elapsed Timer** - Shows live processing time (no fake "4.2s avg" placeholder)
 - 💾 **Export** - Download edited images with one click
@@ -44,14 +44,14 @@ The same React frontend and Express backend ship four ways:
     no backend round-trip, works the same in all four targets.
 ```
 
-**Security:** The Gemini API key never reaches the frontend bundle — it's either typed into the app's Settings UI (BYOK, stored in `localStorage`, sent as `X-API-Key`) or, for local dev only, read server-side from `backend/.env`. The hosted deployment (`HOSTED=true`) never has a server-side key at all — see "Hosted / production backend" below.
+**Security:** The Nano Banana API Key never reaches the frontend bundle — it's either typed into the app's Settings UI (BYOK, stored in `localStorage`, sent as `X-API-Key`) or, for local dev only, read server-side from `backend/.env`. The hosted deployment (`HOSTED=true`) never has a server-side key at all — see "Hosted / production backend" below.
 
 **Background Removal:** Runs 100% client-side using WebAssembly. First use downloads a ~5MB AI model, then works offline.
 
 ## Prerequisites
 
 - **Node.js** ≥ 18
-- A **Gemini API key** from <https://aistudio.google.com/apikey>. The key must have access to `gemini-2.5-flash-image` (free tier works for low volume; production use needs billing enabled).
+- A **Nano Banana API Key** from <https://aistudio.google.com/apikey>. The key must have access to `gemini-2.5-flash-image` (free tier works for low volume; production use needs billing enabled).
 
 ## Setup
 
@@ -64,13 +64,13 @@ cd backend
 npm install
 cd ..
 
-# 3. Add your API key
+# 3. Add your Nano Banana API Key
 echo 'GOOGLE_API_KEY=AIzaSy...your-39-char-key' > backend/.env
 ```
 
-A real Gemini API key is exactly 39 characters and starts with `AIzaSy`. Anything else (including `your-secure-key-here`) will produce `API_KEY_INVALID` from Google.
+A real Nano Banana API Key is exactly 39 characters and starts with `AIzaSy`. Anything else (including `your-secure-key-here`) will produce `API_KEY_INVALID` from Google.
 
-## Using Your Own API Key (Optional)
+## Using Your Own Nano Banana API Key (Optional)
 
 VisionStudio supports two modes:
 
@@ -80,11 +80,11 @@ Add `GOOGLE_API_KEY` to `backend/.env` - all users share this key and rate limit
 **Option 2: Bring Your Own Key (BYOK)**
 
 1. Click the Settings icon (⚙️) in the top-right
-2. Enter your Gemini API key from https://aistudio.google.com/apikey
-3. Click "Test Key" to verify it works
+2. Enter your Nano Banana API Key from https://aistudio.google.com/apikey
+3. Click "Test Nano Banana API Key" to verify it works
 4. Click "Save" - your key is stored in browser localStorage
 
-**Security Note:** Your API key is stored in your browser's localStorage and sent with each request.
+**Security Note:** Your Nano Banana API Key is stored in your browser's localStorage and sent with each request.
 This is secure for personal use but vulnerable to XSS attacks. Never use this on untrusted networks
 or shared computers. You can remove your key anytime via Settings.
 
@@ -259,7 +259,7 @@ By default the backend runs in local-dev mode: it accepts a shared key from `bac
 Set `HOSTED=true` in the deployment's environment to disable both:
 
 - `/api/restart` is not registered at all (no self-restart endpoint exposed publicly).
-- The `.env` shared-key fallback is disabled — every request **must** include its own `X-API-Key` header with a caller-supplied Gemini API key. There's no `GOOGLE_API_KEY` on a hosted server.
+- The `.env` shared-key fallback is disabled — every request **must** include its own `X-API-Key` header with a caller-supplied Nano Banana API Key. There's no `GOOGLE_API_KEY` on a hosted server.
 
 ```bash
 # systemd unit env file, e.g. /etc/visionstudio-backend.env
@@ -272,20 +272,20 @@ Deploy like any other Node service behind a reverse proxy: app in `/opt/<name>`,
 
 ### Hardening a publicly reachable backend
 
-A `HOSTED=true` backend has no server-side Gemini key (safe by design — nobody can spend the deployer's quota), but with nothing else configured it still accepts a request from anyone who knows the URL, as long as they send *some* key-shaped string. Two opt-in layers close that gap:
+A `HOSTED=true` backend has no server-side Nano Banana key (safe by design — nobody can spend the deployer's quota), but with nothing else configured it still accepts a request from anyone who knows the URL, as long as they send *some* key-shaped string. Two opt-in layers close that gap:
 
 - **Rate limiting** — `/api/generate` is capped at 20 requests/minute per IP (`express-rate-limit`), always on, no configuration needed. Behind nginx, the systemd deployment sets `app.set('trust proxy', 1)` when `HOSTED=true` so the limiter sees the real client IP, not nginx's.
-- **Shared app secret** — set `APP_SECRET` in the server's env file to a long random value (`openssl rand -hex 24`) and bake the same value into a client build via `VITE_APP_SECRET` (e.g. `VITE_APP_SECRET=<value> npm run build:ios:release`). The backend then rejects any request missing a matching `X-App-Secret` header with `403` before it reaches Gemini-calling code — filters out random internet scanners/scripts, since they won't know the value. **This is not per-user authentication** — every install of a given build shares the same secret — it raises the bar past "anyone who finds the URL," not to "only authorized people." If `APP_SECRET` is unset on the server, this check is skipped entirely (backward compatible with older builds / no-hardening deployments).
+- **Shared app secret** — set `APP_SECRET` in the server's env file to a long random value (`openssl rand -hex 24`) and bake the same value into a client build via `VITE_APP_SECRET` (e.g. `VITE_APP_SECRET=<value> npm run build:ios:release`). The backend then rejects any request missing a matching `X-App-Secret` header with `403` before it reaches Nano Banana-calling code — filters out random internet scanners/scripts, since they won't know the value. **This is not per-user authentication** — every install of a given build shares the same secret — it raises the bar past "anyone who finds the URL," not to "only authorized people." If `APP_SECRET` is unset on the server, this check is skipped entirely (backward compatible with older builds / no-hardening deployments).
 
 Neither the server's `APP_SECRET` nor a build's `VITE_APP_SECRET` should ever be committed — keep them in the env file / your shell, never in a script or `.env.example`.
 
-Note: Google's Gemini API has been observed geo/IP-reputation-blocking requests from at least one datacenter IP range ("User location is not supported for the API use.") even with a valid key that works fine from a residential/office IP. **This isn't a Linode-wide issue** — it was specific to the `us-lax` (Los Angeles) region; a `us-east` (Newark, NJ) Linode reaches `generativelanguage.googleapis.com` fine. Verify a hosted deployment can actually reach `generativelanguage.googleapis.com` before assuming a `HOSTED=true` deploy is fully working end-to-end — a quick check: `curl -s https://generativelanguage.googleapis.com/v1beta/models?key=$GOOGLE_API_KEY` from the server itself should return a model list, not an error.
+Note: Google's Nano Banana (Gemini) API has been observed geo/IP-reputation-blocking requests from at least one datacenter IP range ("User location is not supported for the API use.") even with a valid key that works fine from a residential/office IP. **This isn't a Linode-wide issue** — it was specific to the `us-lax` (Los Angeles) region; a `us-east` (Newark, NJ) Linode reaches `generativelanguage.googleapis.com` fine. Verify a hosted deployment can actually reach `generativelanguage.googleapis.com` before assuming a `HOSTED=true` deploy is fully working end-to-end — a quick check: `curl -s https://generativelanguage.googleapis.com/v1beta/models?key=$GOOGLE_API_KEY` from the server itself should return a model list, not an error.
 
 `vision.th3rdai.com` is live and reachable from anywhere with internet access — the iOS app's release build (`npm run build:ios:release`) defaults to this URL, so a distributed `.ipa` doesn't require the Mac or the LAN to be running.
 
 ## macOS app (Electron)
 
-VisionStudio also ships as a native macOS desktop app via [Electron](https://electronjs.org). Unlike the iOS/hosted-backend path, the desktop app is fully self-contained: `electron/main.js` forks `backend/index.js` as a local child process on port 3001 and points the UI at it — it never talks to `vision.th3rdai.com`, so it works offline (aside from the actual Gemini call) with no dependency on any hosted infrastructure. Enter your own Gemini key via the same Settings UI as the web app.
+VisionStudio also ships as a native macOS desktop app via [Electron](https://electronjs.org). Unlike the iOS/hosted-backend path, the desktop app is fully self-contained: `electron/main.js` forks `backend/index.js` as a local child process on port 3001 and points the UI at it — it never talks to `vision.th3rdai.com`, so it works offline (aside from the actual Nano Banana call) with no dependency on any hosted infrastructure. Enter your own Nano Banana API Key via the same Settings UI as the web app.
 
 ```bash
 npm run electron:dev     # run from source, no packaging

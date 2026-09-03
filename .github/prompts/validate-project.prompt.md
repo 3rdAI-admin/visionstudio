@@ -80,7 +80,7 @@ Expected: 400 status with error message about prompt type
 
 ### E2E Level 2: External Integration Testing
 
-**Gemini API Integration (requires valid GOOGLE_API_KEY in backend/.env):**
+**Nano Banana API Integration (requires valid GOOGLE_API_KEY in backend/.env):**
 
 First, create a small test image as base64:
 `echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" > /tmp/test_image_b64.txt`

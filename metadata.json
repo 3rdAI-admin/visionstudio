@@ -1,6 +1,6 @@
 {
   "name": "VisionStudio AI",
-  "description": "An advanced AI-powered image editing studio that transforms your photos using natural language commands. Powered by Gemini nano banana series.",
+  "description": "An advanced AI-powered image editing studio that transforms your photos using natural language commands. Powered by the Nano Banana series.",
   "requestFramePermissions": [],
   "majorCapabilities": ["image_generation", "image_editing"]
 }

@@ -15,8 +15,8 @@ export interface ApiKeySettingsProps {
 }
 
 /**
- * Settings modal for managing Gemini API key.
- * Allows users to add, test, edit, and remove their API key with BYOK pattern.
+ * Settings modal for managing the Nano Banana API Key.
+ * Allows users to add, test, edit, and remove their key with BYOK pattern.
  *
  * Takes apiKeyHook as a prop rather than calling useApiKey() itself — the
  * hook holds React state (the loaded key, its status), and a second
@@ -92,7 +92,7 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
               <div className="flex items-center gap-2">
                 <Key className="w-5 h-5 text-brand-blue" />
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">
-                  API Key Settings
+                  Nano Banana API Key Settings
                 </h2>
               </div>
               <button
@@ -108,15 +108,15 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
             <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3 mb-4 flex gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-yellow-500/80 leading-relaxed">
-                Your API key is stored in browser localStorage and sent with each request. Use only
-                on trusted devices. Never share screenshots of this page.
+                Your Nano Banana API Key is stored in browser localStorage and sent with each request.
+                Use only on trusted devices. Never share screenshots of this page.
               </p>
             </div>
 
             {/* Input field with show/hide toggle */}
             <div className="mb-4">
               <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2">
-                Google Gemini API Key
+                Nano Banana API Key
               </label>
               <div className="relative">
                 <input
@@ -146,13 +146,13 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
             {testResult === 'success' && (
               <div className="mb-4 p-2 bg-green-500/5 border border-green-500/20 rounded-lg flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-500" />
-                <span className="text-xs text-green-500/90">API key is valid!</span>
+                <span className="text-xs text-green-500/90">Nano Banana API Key is valid!</span>
               </div>
             )}
             {testResult === 'error' && (
               <div className="mb-4 p-2 bg-red-500/5 border border-red-500/20 rounded-lg flex items-center gap-2">
                 <X className="w-4 h-4 text-red-500" />
-                <span className="text-xs text-red-500/90">Invalid API key or test failed</span>
+                <span className="text-xs text-red-500/90">Invalid Nano Banana API Key or test failed</span>
               </div>
             )}
 
@@ -165,7 +165,7 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
                          disabled:opacity-40 disabled:cursor-not-allowed transition-colors
                          focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
               >
-                {isTesting ? 'Testing...' : 'Test Key'}
+                {isTesting ? 'Testing...' : 'Test Nano Banana API Key'}
               </button>
               <button
                 onClick={handleSave}
@@ -185,7 +185,7 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
                        hover:bg-red-500/20 disabled:opacity-40 disabled:cursor-not-allowed mb-4 transition-colors
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             >
-              Remove Key
+              Remove Nano Banana API Key
             </button>
 
             {/* Link to get API key */}
@@ -195,7 +195,7 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-brand-blue hover:text-brand-purple transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
             >
-              Get API Key from Google AI Studio
+              Get your Nano Banana API Key
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </motion.div>

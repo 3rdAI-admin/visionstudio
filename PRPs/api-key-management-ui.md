@@ -1,12 +1,12 @@
 name: "Secure API Key Management UI for VisionStudio"
 description: |
-  Add a settings UI that allows users to bring their own Gemini API key (BYOK pattern),
+  Add a settings UI that allows users to bring their own Nano Banana API Key (BYOK pattern),
   with secure localStorage management, validation, testing, and clear security warnings.
 
 ---
 
 ## Goal
-Add a secure API key management interface to VisionStudio that allows users to provide, test, edit, and remove their own Google Gemini API keys. This enables users to use their own API quotas and billing, making the app more distributable without requiring a shared backend API key.
+Add a secure API key management interface to VisionStudio that allows users to provide, test, edit, and remove their own Nano Banana API Keys. This enables users to use their own API quotas and billing, making the app more distributable without requiring a shared backend API key.
 
 ## Why
 - **Scalability:** Users bring their own API keys, eliminating shared rate limits and billing concerns
@@ -19,7 +19,7 @@ Add a secure API key management interface to VisionStudio that allows users to p
 ## What
 Users will be able to:
 1. Open settings modal via gear icon in header
-2. Input their Gemini API key with masked display (show/hide toggle)
+2. Input their Nano Banana API Key with masked display (show/hide toggle)
 3. Test API key validity with a lightweight test call
 4. Save API key to localStorage (with security warnings)
 5. Edit existing API key
@@ -322,7 +322,7 @@ Task 7: Update README.md with BYOK instructions
 
     **Option 2: Bring Your Own Key (BYOK)**
     1. Click the Settings icon (⚙️) in the top-right
-    2. Enter your Gemini API key from https://aistudio.google.com/apikey
+    2. Enter your Nano Banana API Key from https://aistudio.google.com/apikey
     3. Click "Test Key" to verify it works
     4. Click "Save" - your key is stored in browser localStorage
 
@@ -335,7 +335,7 @@ Task 8: Update USERSGUIDE.md with API key management
   ADD new section after "Getting Started":
     ### Managing Your API Key
 
-    VisionStudio can use either a shared backend API key or your personal Google Gemini API key.
+    VisionStudio can use either a shared backend API key or your personal Nano Banana API Key.
 
     **To add your own key:**
     1. Get a free API key from https://aistudio.google.com/apikey
@@ -387,7 +387,7 @@ Task 9: Add integration test for API key flow
 
 ```typescript
 /**
- * Custom hook for managing Gemini API key with localStorage persistence
+ * Custom hook for managing the Nano Banana API Key with localStorage persistence
  * Provides validation, testing, and secure storage
  */
 
@@ -501,7 +501,7 @@ export function useApiKey(): UseApiKeyReturn {
 
 ```typescript
 /**
- * Settings modal for managing Gemini API key
+ * Settings modal for managing the Nano Banana API Key
  * Allows users to add, test, edit, and remove their API key
  */
 
@@ -587,7 +587,7 @@ export default function ApiKeySettings({ isOpen, onClose }: ApiKeySettingsProps)
             {/* Input field with show/hide toggle */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Google Gemini API Key
+                Nano Banana API Key
               </label>
               <div className="relative">
                 <input
