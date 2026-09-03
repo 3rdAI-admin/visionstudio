@@ -23,7 +23,7 @@ import { useEditHistory } from './hooks/useEditHistory';
 import { useApiKey } from './hooks/useApiKey';
 import { getBackendUrl } from './backendUrl';
 import ApiKeySettings from './components/ApiKeySettings';
-import logoEye from '../assets/Digital_Eye_medium.png';
+import logoEye from '../assets/VisionStudio-mark-only.svg';
 
 interface ImageState {
   data: string;
