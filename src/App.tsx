@@ -949,7 +949,7 @@ export default function App() {
                           <img
                             src={editedImage || originalSrc!}
                             alt="Preview"
-                            className={`max-w-full h-auto border border-white/5 transition-all duration-700 ${!editedImage ? 'filter grayscale-[0.5] opacity-80' : ''}`}
+                            className="max-w-full h-auto border border-white/5 transition-all duration-700"
                             referrerPolicy="no-referrer"
                           />
 
