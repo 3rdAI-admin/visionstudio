@@ -827,7 +827,8 @@ export default function App() {
                         },
                         {
                           label: 'Cartoonize',
-                          prompt: 'Convert this image into a clean 2D cartoon illustration style',
+                          prompt:
+                            'Convert this entire image into a clean 2D cartoon illustration style — redraw the background with the same flat cartoon shading and bold outlines as the subject, not a photorealistic background',
                         },
                       ].map((hint, i) => (
                         <button
