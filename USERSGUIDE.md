@@ -2,9 +2,11 @@
 
 Welcome to **Th3rdAI Vision Studio** — your AI-powered image editing and transformation tool. This guide will help you get started and make the most of all available features.
 
+This guide covers the **web app**, run locally as described below. VisionStudio also ships as a native **iOS app** (install the `.ipa` you were given, or ask whoever built it for one) and a native **macOS app** (a `.dmg`/`.pkg`, no local server setup needed — the app runs its own backend). The features, prompts, and UI described here are the same across all three; only the setup steps differ.
+
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Web App)
 
 ### First-Time Setup
 
@@ -354,7 +356,7 @@ Pro tip: Experiment with different prompts knowing you can always undo!
 
 1. **Check both terminals are running**
    - Backend on port 3001
-   - Frontend on port 3000
+   - Frontend on port 3002
 
 2. **Hard refresh your browser**
    - Windows/Linux: `Ctrl + Shift + R`

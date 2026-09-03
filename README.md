@@ -20,17 +20,31 @@ Browser-based image editor and converter that transforms images via natural-lang
 
 ## Architecture
 
+The same React frontend and Express backend ship four ways:
+
 ```
-┌─────────────────────────────────────┐         ┌──────────────────────┐         ┌────────────────────────────┐
-│ Frontend (Vite + React)             │  POST   │ Backend (Express)    │  HTTPS  │ Google Generative Language │
-│ http://localhost:3002               │────────▶│ http://localhost:3001│────────▶│ gemini-2.5-flash-image     │
-│                                     │  /api/  │ backend/index.js     │         │ (image edit/convert/gen)   │
-│ + @imgly/background-removal         │ generate└──────────────────────┘         └────────────────────────────┘
-│   (client-side WASM, ~5MB model)    │
-└─────────────────────────────────────┘
+                    ┌─────────────────────┐
+                    │ Web (local dev)      │  http://localhost:3002 → http://localhost:3001
+                    ├─────────────────────┤
+                    │ iOS (Capacitor)       │  ios/App/App.xcodeproj → https://vision.th3rdai.com
+                    ├─────────────────────┤   (or a LAN IP for dev builds)
+                    │ macOS (Electron)      │  electron/main.js forks its own local backend
+                    ├─────────────────────┤   on :3001 — never talks to the hosted server
+                    │ Hosted backend         │  vision.th3rdai.com (Linode, us-east) — every
+                    │ (HOSTED=true)          │  caller sends its own X-API-Key (BYOK)
+                    └─────────────────────┘
+                              │  POST /api/generate
+                              ▼
+                    ┌────────────────────────────┐
+                    │ Google Generative Language │
+                    │ gemini-2.5-flash-image     │
+                    └────────────────────────────┘
+
+  + @imgly/background-removal runs 100% client-side (WASM, ~5MB model) —
+    no backend round-trip, works the same in all four targets.
 ```
 
-**Security:** The Gemini API key never reaches the browser — the React app talks only to the Node backend, which holds the key in `backend/.env`.
+**Security:** The Gemini API key never reaches the frontend bundle — it's either typed into the app's Settings UI (BYOK, stored in `localStorage`, sent as `X-API-Key`) or, for local dev only, read server-side from `backend/.env`. The hosted deployment (`HOSTED=true`) never has a server-side key at all — see "Hosted / production backend" below.
 
 **Background Removal:** Runs 100% client-side using WebAssembly. First use downloads a ~5MB AI model, then works offline.
 
@@ -116,7 +130,7 @@ Open <http://localhost:3002>.
 { "error": "human-readable message from Google or local validation" }
 ```
 
-CORS is restricted to the frontend's origin (`http://localhost:3002` by default, configurable via `FRONTEND_ORIGIN`). Body limit is 25 MB so typical UI uploads fit.
+CORS is restricted to the frontend's origin (`http://localhost:3002` by default, configurable via `FRONTEND_ORIGIN`), plus Capacitor's native schemes and Electron's no-Origin `file://` requests. In local dev (`HOSTED` unset) it also allows any RFC1918 LAN IP on the same port, so the app works when opened from another device on your network (e.g. a phone at `http://192.168.x.x:3002`) — this LAN allowance does **not** apply when `HOSTED=true`. Body limit is 25 MB so typical UI uploads fit. `/api/generate` is additionally rate-limited (20 req/min per IP) and, on a `HOSTED=true` deployment with `APP_SECRET` configured, requires a matching `X-App-Secret` header — see "Hosted / production backend" below.
 
 ## Smoke test
 
@@ -157,21 +171,31 @@ curl -sS -X POST http://localhost:3001/api/generate \
 ```
 visionstudio/
 ├── assets/                      # Brand logos imported by App.tsx (project root)
-│   ├── Digital_Eye_medium.png   # Eye logo (header + footer)
-│   └── th3rdai-clear.png        # Wordmark (hero)
+│   └── VisionStudio-mark-only.svg  # Header/hero/footer logo (vector)
+│       VisionStudio-iOS-*.{png,svg}  # iOS app icon / splash source art
+│       VisionStudio-Watch.{png,svg}  # watchOS companion icon source art
 ├── backend/
-│   ├── index.js                 # Express server, single /api/generate route
-│   ├── .env                     # GOOGLE_API_KEY (gitignored)
-│   └── package.json             # express, cors, dotenv, @google/generative-ai
+│   ├── index.js                 # Express server: /api/generate, /api/key-status, /api/restart (dev-only)
+│   ├── .env                     # GOOGLE_API_KEY (gitignored, local dev only)
+│   └── package.json             # express, cors, dotenv, express-rate-limit, @google/generative-ai
+├── electron/                    # macOS desktop app (forks backend/index.js locally, no hosted dependency)
+│   ├── main.js
+│   ├── notarize.js              # afterSign hook, skips gracefully without Apple credentials
+│   └── entitlements.mac.plist
+├── ios/                         # iOS app (Capacitor)
+│   ├── App/App.xcodeproj
+│   ├── App/ExportOptions.plist  # ad-hoc export config
+│   └── build-release.sh         # archive + export a signed .ipa; defaults to the hosted backend
 ├── src/
 │   ├── App.tsx                  # Single-page editor (upload → prompt → result + bg removal)
+│   ├── backendUrl.ts            # Resolves backend URL + optional X-App-Secret header
+│   ├── hooks/useApiKey.ts       # BYOK API key state (localStorage)
 │   ├── main.tsx
-│   ├── index.css
-│   └── assets/images/           # Larger logo PNGs (unused; kept for reference)
+│   └── index.css
 ├── index.html
-├── vite.config.ts
-└── package.json                 # react, motion/react, lucide-react, vite,
-                                 # @imgly/background-removal
+├── vite.config.ts               # base: './' — required for Electron's file:// loading
+└── package.json                 # react, motion/react, lucide-react, vite, electron,
+                                 # electron-builder, @imgly/background-removal
 ```
 
 ## Troubleshooting
@@ -182,6 +206,8 @@ visionstudio/
 | `{"error":"models/gemini-2.5-flash-image is not found"}`                                  | Backend's `@google/generative-ai` SDK is too old. `cd backend && npm install @google/generative-ai@latest`                                                                                                                                                                                                                                                                                        |
 | Browser shows broken-image icons for logos                                                | Hard reload (Cmd-Shift-R). Logos are imported from `../assets/` and served by Vite.                                                                                                                                                                                                                                                                                                               |
 | `CORS policy` errors in browser console                                                   | Frontend running on a port the backend doesn't expect. Set `FRONTEND_ORIGIN` env var (or use the Settings UI's port config, which sets it automatically) to match.                                                                                                                                                                                                                                                                                     |
+| App works on the Mac but fails to process images when opened from a phone on the same Wi-Fi (`http://192.168.x.x:3002`) | Should already be fixed in local dev (the backend allows any LAN-IP origin on the frontend's port when `HOSTED` is unset, and the frontend derives its backend URL from the page's own hostname instead of a hardcoded `localhost`). If you still see this, confirm both `./startup.sh` processes were restarted after pulling the fix. |
+| Hosted app (real device, `vision.th3rdai.com`) gets `Could not reach backend ... Load failed` even with the app working for tiny requests like `/api/key-status` | Check the reverse proxy's body-size limit before anything else — nginx's default is 1MB, and Express here allows up to 25MB. A real photo's base64 payload gets a `413` from nginx before the request ever reaches the Node app, and WKWebView's `fetch()` reports that as a generic "Load failed," not a readable HTTP status. Fix: `client_max_body_size 25m;` in the site's nginx config, `nginx -t && systemctl reload nginx`. |
 | `Failed to fetch` from frontend                                                           | Backend isn't running, or crashed. Check `tail -20 /tmp/visionstudio-backend.log` (or whatever you redirect stdout to).                                                                                                                                                                                                                                                                           |
 | Backend silently restarts when editing                                                    | Vite watches the project root including `backend/` — that's expected dev-loop behavior. Production should run them separately.                                                                                                                                                                                                                                                                    |
 | Background removal stuck on "Processing..."                                               | First run downloads ~5MB model. Check browser DevTools Network tab. If download fails, check internet connection and try again.                                                                                                                                                                                                                                                                   |
@@ -197,50 +223,34 @@ Backend logs every request (timestamp, method, path, status, duration, response 
 
 VisionStudio also ships as a native iOS app via [Capacitor](https://capacitorjs.com), wrapping the same `dist/` build. Xcode project: `ios/App/App.xcodeproj`. Bundle ID: `com.th3rdai.visionstudio`.
 
-### Build and sync
-
-The native app needs a backend it can actually reach — `localhost` doesn't resolve on a device/simulator the way it does in a browser, so point the build at your Mac's LAN IP:
+### Release build (ad-hoc distribution)
 
 ```bash
-# Find your Mac's LAN IP
-ipconfig getifaddr en0
+npm run build:ios:release
+# defaults to VITE_BACKEND_URL=https://vision.th3rdai.com
+# override for a one-off test build, e.g.:
+VITE_BACKEND_URL=http://<your-lan-ip>:3001 npm run build:ios:release
+```
 
-# Build the frontend with that IP baked in, then sync into the Xcode project
+Runs `ios/build-release.sh`: builds the web bundle, syncs into the Xcode project, bumps the build number (`agvtool`), archives, and exports a signed `.ipa` to `build/export/App.ipa`. Needs a **paid Apple Developer Program** membership on the signing team (`9LRPX62LGN`) — Xcode's automatic signing creates the Distribution certificate and ad-hoc provisioning profile on first archive if one doesn't already exist; no other manual portal steps are required as long as the target device's UDID is registered.
+
+Install on a device: `xcrun devicectl device install app --device <coredevice-id> build/export/App.ipa`, then `xcrun devicectl device process launch --device <coredevice-id> com.th3rdai.visionstudio` (find the device ID via `xcrun devicectl list devices` — `xcrun xctrace list devices` can show a stale "Offline" status for a device that's actually connected, trust `devicectl` if they disagree).
+
+**Gotcha**: after archiving, `git status` will show `ios/App/App/Info.plist` and `ios/App/App.xcodeproj/project.pbxproj` as modified — Xcode's build process expands `$(CURRENT_PROJECT_VERSION)`/`$(MARKETING_VERSION)` inline into the plist as a build artifact, and the build-number bump is real but only meaningful for an actual release. For a one-off test archive, `git checkout -- ios/App/App/Info.plist ios/App/App.xcodeproj/project.pbxproj` afterward to discard both.
+
+Since `v1.0.0`, no `NSAllowsLocalNetworking` ATS exception is needed — the release default points at a real HTTPS backend, not a LAN IP.
+
+### Dev/Simulator build (LAN backend)
+
+For iterating without cutting a full signed release, sync the Capacitor project directly against your Mac's LAN IP:
+
+```bash
+ipconfig getifaddr en0   # find your Mac's LAN IP
 VITE_BACKEND_URL=http://<your-lan-ip>:3001 npm run build
 npx cap sync ios
 ```
 
-`ios/App/App/public/` (Capacitor's copy of `dist/`) is gitignored — always re-run the above before opening Xcode if it might be stale. Both the Mac (running `./startup.sh start`) and the device must be on the **same Wi-Fi network** — the simulator shares the Mac's network stack automatically, but a real device does not.
-
-### Run in Simulator
-
-Open `ios/App/App.xcodeproj` in Xcode, pick a simulator, and hit Run — no extra signing setup needed.
-
-### Run on a real device
-
-Real-device builds need a development team, which isn't set in the checked-in `.pbxproj`:
-
-```bash
-xcodebuild -project ios/App/App.xcodeproj -scheme App \
-  -destination 'generic/platform=iOS' \
-  DEVELOPMENT_TEAM=<your-team-id> \
-  -allowProvisioningUpdates archive ...
-# or simplest: open the project in Xcode, select your device as the run
-# destination, and set the team under Signing & Capabilities — Xcode
-# handles automatic provisioning from there.
-```
-
-To install and launch without Xcode's UI (e.g. from a script), use `devicectl`:
-
-```bash
-xcrun devicectl list devices    # find your device's CoreDevice identifier
-xcrun devicectl device install app --device <coredevice-id> <path-to-.app>
-xcrun devicectl device process launch --device <coredevice-id> com.th3rdai.visionstudio
-```
-
-`xcrun xctrace list devices` can show a stale "Offline" status for a device that's actually connected — trust `devicectl`'s view over `xctrace`'s if they disagree.
-
-`ios/App/App/Info.plist` has an ATS exception (`NSAllowsLocalNetworking`) to permit plain-HTTP LAN traffic to the dev backend. That's dev-only — don't widen it to `NSAllowsArbitraryLoads` as a shortcut for a hosted backend; use real HTTPS instead (see below).
+`ios/App/App/public/` (Capacitor's copy of `dist/`) is gitignored — always re-run the above before opening Xcode if it might be stale. Both the Mac (running `./startup.sh start`) and the device must be on the **same Wi-Fi network** — the simulator shares the Mac's network stack automatically, but a real device does not. Open `ios/App/App.xcodeproj` in Xcode, pick a simulator or device, and hit Run — Xcode's automatic signing handles the rest.
 
 ## Hosted / production backend (`HOSTED=true`)
 
@@ -273,9 +283,20 @@ Note: Google's Gemini API has been observed geo/IP-reputation-blocking requests 
 
 `vision.th3rdai.com` is live and reachable from anywhere with internet access — the iOS app's release build (`npm run build:ios:release`) defaults to this URL, so a distributed `.ipa` doesn't require the Mac or the LAN to be running.
 
-## macOS app auto-updates
+## macOS app (Electron)
 
-The Electron macOS build (`npm run electron:build`) checks GitHub Releases for updates on launch and every 4 hours via [`electron-updater`](https://www.electron.build/auto-update) — no separate update server. When a newer version is found it downloads in the background and prompts to restart once ready.
+VisionStudio also ships as a native macOS desktop app via [Electron](https://electronjs.org). Unlike the iOS/hosted-backend path, the desktop app is fully self-contained: `electron/main.js` forks `backend/index.js` as a local child process on port 3001 and points the UI at it — it never talks to `vision.th3rdai.com`, so it works offline (aside from the actual Gemini call) with no dependency on any hosted infrastructure. Enter your own Gemini key via the same Settings UI as the web app.
+
+```bash
+npm run electron:dev     # run from source, no packaging
+npm run electron:build   # produce a local .dmg/.pkg/.zip in release/ (unsigned notarization, no publish)
+```
+
+`vite.config.ts` sets `base: './'` so the built `dist/index.html` uses relative asset paths — required for Electron's `file://` loading (an absolute `/assets/...` path 404s under `file://`, which has no server root to resolve against). Don't remove this even though it also happens to be harmless for the web/Capacitor targets.
+
+### Auto-updates
+
+The Electron build checks GitHub Releases for updates on launch and every 4 hours via [`electron-updater`](https://www.electron.build/auto-update) — no separate update server. When a newer version is found it downloads in the background and prompts to restart once ready.
 
 To cut a release:
 
