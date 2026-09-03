@@ -426,30 +426,31 @@ export default function App() {
           status bar/notch in the native (Capacitor) build; a no-op on web,
           where env(safe-area-inset-top) is 0. */}
       <header
-        className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-30 flex items-center px-6"
+        className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-30 flex items-center px-3 sm:px-6"
         style={{ paddingTop: 'env(safe-area-inset-top)', height: 'calc(3.5rem + env(safe-area-inset-top))' }}
       >
-        <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <img src={logoEye} className="w-6 h-6 object-contain" alt="Th3rdAI" />
-            <span className="text-[10px] font-medium tracking-[0.2em] uppercase opacity-50">
+        <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
+            <img src={logoEye} className="w-6 h-6 object-contain shrink-0" alt="Th3rdAI" />
+            <span className="hidden sm:inline text-[10px] font-medium tracking-[0.2em] uppercase opacity-50 truncate">
               Th3rdAI Vision Studio — v2.2
             </span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
             {originalImage && (
               <button
                 onClick={reset}
-                className="flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
+                className="flex items-center justify-center gap-2 min-w-11 min-h-11 sm:min-w-0 sm:min-h-0 sm:py-2 sm:-my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
                 aria-label="Reset workspace"
+                title="Reset workspace"
               >
-                <RotateCcw className="w-3 h-3" />
-                Reset Workspace
+                <RotateCcw className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                <span className="hidden sm:inline">Reset Workspace</span>
               </button>
             )}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="relative flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
+              className="relative flex items-center justify-center gap-2 min-w-11 min-h-11 sm:min-w-0 sm:min-h-0 sm:py-2 sm:-my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
               aria-label="Settings"
             >
               <Settings className="w-4 h-4" />
@@ -477,32 +478,32 @@ export default function App() {
             </button>
             {editedImage && (
               <>
-                <div className="flex gap-2">
+                <div className="flex gap-1 sm:gap-2">
                   <button
                     onClick={handleUndo}
                     disabled={!history.canUndo || isBusy}
                     title="Undo (⌘Z)"
-                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20
+                    className="min-w-11 min-h-11 sm:min-w-0 sm:min-h-0 sm:px-3 sm:py-1.5 rounded-lg bg-white/10 hover:bg-white/20
                                disabled:opacity-30 disabled:cursor-not-allowed
-                               transition-all duration-200 flex items-center gap-2
+                               transition-all duration-200 flex items-center justify-center gap-2
                                text-[10px] font-bold uppercase tracking-widest
                                focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                   >
-                    <Undo className="w-3 h-3" />
-                    <span>Undo</span>
+                    <Undo className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                    <span className="hidden sm:inline">Undo</span>
                   </button>
                   <button
                     onClick={handleRedo}
                     disabled={!history.canRedo || isBusy}
                     title="Redo (⌘⇧Z)"
-                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20
+                    className="min-w-11 min-h-11 sm:min-w-0 sm:min-h-0 sm:px-3 sm:py-1.5 rounded-lg bg-white/10 hover:bg-white/20
                                disabled:opacity-30 disabled:cursor-not-allowed
-                               transition-all duration-200 flex items-center gap-2
+                               transition-all duration-200 flex items-center justify-center gap-2
                                text-[10px] font-bold uppercase tracking-widest
                                focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                   >
-                    <Redo className="w-3 h-3" />
-                    <span>Redo</span>
+                    <Redo className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                    <span className="hidden sm:inline">Redo</span>
                   </button>
                 </div>
               </>
@@ -511,20 +512,22 @@ export default function App() {
               <>
                 <button
                   onClick={() => setCompareMode((v) => !v)}
-                  className="flex items-center gap-2 py-2 -my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
+                  className="flex items-center justify-center gap-2 min-w-11 min-h-11 sm:min-w-0 sm:min-h-0 sm:py-2 sm:-my-2 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded"
                   aria-pressed={compareMode}
                   aria-label="Toggle before/after comparison"
                   title="Toggle before/after comparison"
                 >
-                  {compareMode ? <Square className="w-3 h-3" /> : <Columns className="w-3 h-3" />}
-                  {compareMode ? 'Single' : 'Compare'}
+                  {compareMode ? <Square className="w-3.5 h-3.5 sm:w-3 sm:h-3" /> : <Columns className="w-3.5 h-3.5 sm:w-3 sm:h-3" />}
+                  <span className="hidden sm:inline">{compareMode ? 'Single' : 'Compare'}</span>
                 </button>
                 <button
                   onClick={downloadImage}
-                  className="px-4 py-1.5 bg-brand-gradient text-white text-[10px] font-bold uppercase tracking-widest rounded hover:opacity-90 hover:-translate-y-px transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
+                  className="flex items-center justify-center gap-2 min-w-11 min-h-11 sm:min-w-0 sm:min-h-0 sm:px-4 sm:py-1.5 bg-brand-gradient text-white text-[10px] font-bold uppercase tracking-widest rounded hover:opacity-90 hover:-translate-y-px transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]"
+                  aria-label="Export image"
+                  title="Export image"
                 >
-                  <Download className="w-3 h-3" />
-                  Export Image
+                  <Download className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                  <span className="hidden sm:inline">Export Image</span>
                 </button>
               </>
             )}
