@@ -1,4 +1,5 @@
 ---
+name: validate
 description: Validate Context Engineering Template (project-specific)
 ---
 
