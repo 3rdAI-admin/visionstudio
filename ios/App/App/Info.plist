@@ -21,9 +21,11 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<string>3</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>VisionStudio needs access to your camera so you can take a photo to import and edit.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>VisionStudio needs access to save your edited images to Photos when you tap "Save Image" from the share sheet.</string>
 	<key>UIApplicationSceneManifest</key>
