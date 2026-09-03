@@ -65,3 +65,6 @@ ios/DerivedData/
 # background-removal WASM model) — regenerate with:
 #   npm run build && npx cap sync ios
 ios/App/App/public/
+
+# Playwright MCP debug artifacts (console/page snapshots from browser-driven testing)
+.playwright-mcp/
