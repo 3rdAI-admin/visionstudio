@@ -1,12 +1,17 @@
 require('dotenv').config({ path: './.env' });
 const express = require('express');
 const cors = require('cors');
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
 const app = express();
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// Set HOSTED=true on a public deployment (e.g. the systemd unit's env file).
+// Disables the local-only self-restart endpoint and the shared .env-key
+// fallback — both are fine for a single-user localhost dev tool but unsafe
+// once the server is reachable by anyone on the internet: /api/restart
+// would let a stranger kill/respawn the process, and the fallback would let
+// anyone burn the deployer's own Gemini quota with no key of their own.
+const HOSTED = process.env.HOSTED === 'true';
 
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000' }));
 // Images sent as base64 are large — bump default 100KB limit.
@@ -29,40 +34,44 @@ app.get('/api/key-status', (req, res) => {
   res.json({ configured });
 });
 
-const isValidPort = (n) => Number.isInteger(n) && n > 0 && n < 65536;
+// Local-dev-only: lets the Settings UI change ports and respawn the local
+// startup.sh-managed processes. Meaningless (and unsafe, unauthenticated
+// process control) once hosted, so it's not registered when HOSTED=true.
+if (!HOSTED) {
+  const { spawn } = require('child_process');
+  const path = require('path');
+  const fs = require('fs');
 
-// Restarts both processes via startup.sh. Optional backendPort/frontendPort
-// in the body are written to .run/ports.env first so startup.sh picks them
-// up; ports are validated here since they end up sourced by a shell script.
-// Responds before exiting so the frontend's fetch doesn't just hang against
-// a dying connection.
-app.post('/api/restart', (req, res) => {
-  const { backendPort, frontendPort } = req.body || {};
-  const root = path.join(__dirname, '..');
+  const isValidPort = (n) => Number.isInteger(n) && n > 0 && n < 65536;
 
-  if (backendPort !== undefined || frontendPort !== undefined) {
-    if (backendPort !== undefined && !isValidPort(backendPort)) {
-      return res.status(400).json({ error: 'backendPort must be an integer between 1 and 65535' });
+  app.post('/api/restart', (req, res) => {
+    const { backendPort, frontendPort } = req.body || {};
+    const root = path.join(__dirname, '..');
+
+    if (backendPort !== undefined || frontendPort !== undefined) {
+      if (backendPort !== undefined && !isValidPort(backendPort)) {
+        return res.status(400).json({ error: 'backendPort must be an integer between 1 and 65535' });
+      }
+      if (frontendPort !== undefined && !isValidPort(frontendPort)) {
+        return res.status(400).json({ error: 'frontendPort must be an integer between 1 and 65535' });
+      }
+      const lines = [];
+      if (backendPort !== undefined) lines.push(`BACKEND_PORT=${backendPort}`);
+      if (frontendPort !== undefined) lines.push(`FRONTEND_PORT=${frontendPort}`);
+      fs.mkdirSync(path.join(root, '.run'), { recursive: true });
+      fs.writeFileSync(path.join(root, '.run', 'ports.env'), lines.join('\n') + '\n');
     }
-    if (frontendPort !== undefined && !isValidPort(frontendPort)) {
-      return res.status(400).json({ error: 'frontendPort must be an integer between 1 and 65535' });
-    }
-    const lines = [];
-    if (backendPort !== undefined) lines.push(`BACKEND_PORT=${backendPort}`);
-    if (frontendPort !== undefined) lines.push(`FRONTEND_PORT=${frontendPort}`);
-    fs.mkdirSync(path.join(root, '.run'), { recursive: true });
-    fs.writeFileSync(path.join(root, '.run', 'ports.env'), lines.join('\n') + '\n');
-  }
 
-  res.json({ restarting: true });
-  const startupScript = path.join(root, 'startup.sh');
-  spawn(startupScript, ['restart'], {
-    cwd: root,
-    detached: true,
-    stdio: 'ignore',
-  }).unref();
-  setTimeout(() => process.exit(0), 250);
-});
+    res.json({ restarting: true });
+    const startupScript = path.join(root, 'startup.sh');
+    spawn(startupScript, ['restart'], {
+      cwd: root,
+      detached: true,
+      stdio: 'ignore',
+    }).unref();
+    setTimeout(() => process.exit(0), 250);
+  });
+}
 
 app.post('/api/generate', async (req, res) => {
   try {
@@ -71,12 +80,17 @@ app.post('/api/generate', async (req, res) => {
       return res.status(400).json({ error: 'prompt (non-empty string) is required' });
     }
 
-    // Accept API key from X-API-Key header or fall back to .env
-    const apiKey = req.headers['x-api-key'] || process.env.GOOGLE_API_KEY;
+    // Local dev: X-API-Key header or fall back to .env's shared key.
+    // Hosted: no fallback — a public server must not let a keyless caller
+    // spend the deployer's own Gemini quota, so every request needs its
+    // own key.
+    const apiKey = req.headers['x-api-key'] || (!HOSTED && process.env.GOOGLE_API_KEY);
 
     if (!apiKey) {
       return res.status(400).json({
-        error: 'API key required. Add X-API-Key header or set GOOGLE_API_KEY in .env'
+        error: HOSTED
+          ? 'API key required. Add an X-API-Key header with your own Gemini API key.'
+          : 'API key required. Add X-API-Key header or set GOOGLE_API_KEY in .env'
       });
     }
 
