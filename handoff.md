@@ -2,7 +2,13 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (fixed the broken favicon — PR #18, merged — Archon board now has zero open tasks), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+Last updated: 2026-09-03 (merged the dependabot Vite 6→8 bump, PR #6 — no PRs left open, only routine maintenance from here), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+
+## 📦 Dependabot Vite 6→8 bump merged (PR #6)
+
+11-package bump (Vite 6.4.2→8.2.2, sharp, body-parser, undici, ws, others). This is the same bump set that superseded PR #5 earlier today (dependabot regenerated it against a newer base after #7's Electron work landed) — that PR was fully verified once already, but this one's base had drifted **10 more merged PRs** behind current `main` by the time it came up again, so re-verified from scratch rather than trusting the old result: merged the actual PR branch with current `main` in an isolated worktree (clean auto-merge, no conflicts even in `package.json`/lockfiles), fresh `npm install` in both root and `backend/`, `tsc`/35 unit tests/build/4 e2e all green on the real combined state, confirmed both today's favicon and Cartoonize fixes survived the merge and build correctly under Vite 8. Also drops the repo's flagged vulnerability count from 86 to 19 (all in transitive deps, none newly introduced by this bump).
+
+No PRs open now except whatever dependabot generates next.
 
 ## 🖼️ Favicon fixed (PR #18)
 
