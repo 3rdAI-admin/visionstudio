@@ -2,7 +2,13 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (✅ user confirmed everything working end-to-end — iOS app, macOS app, web app on both Mac and iPhone), by session `01PbFrBceHHpLS3N8FhU8pqQ`.
+Last updated: 2026-09-03 (docs (README/CLAUDE.md/USERSGUIDE.md) brought current, then a full Archon board sync — one task per merged PR, backfilled from the repo snapshot; found and flagged a real, still-open bug: the favicon is broken), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+
+## 📋 Archon board synced 2026-09-03
+
+Project `bef7e278-bd9d-4c44-905d-5d7c30147a16` had only 3 tasks (all `done`, all pre-dating the day's later PRs). Backfilled one `done` task per merged PR (#7–#15, plus two direct-to-main commits and the server-side nginx fix) so the board matches shipped reality — 13 tasks total now, 12 `done` / 1 `todo`. Note: `manage_task`'s `create` action ignores a passed `status` — every task lands as `todo` and needs a follow-up `update` call to set the real status; don't assume `create(..., status: "done")` worked without checking.
+
+**One real gap found while updating docs, not previously tracked**: `index.html`'s favicon `<link>` still points at `Digital_Eye_icon.png`, deleted by the rebrand (`1b06c98`) — **the favicon is currently broken (404s)**. Not fixed this session (docs-only scope was asked for) — tracked as its own `todo` task on the board ("Fix broken favicon"), and noted on the rebrand task's description too since that's the work that caused the gap.
 
 ## ✅ All platforms confirmed working by the user — 2026-09-03
 
