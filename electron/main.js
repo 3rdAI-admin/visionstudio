@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog } = require('electron');
 const path = require('path');
 const { fork } = require('child_process');
+const { autoUpdater } = require('electron-updater');
 
 // Fixed to match src/backendUrl.ts's DEV_DEFAULT ('http://localhost:3001'),
 // so the renderer needs no VITE_BACKEND_URL baked in and no config wiring —
@@ -64,9 +65,50 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
 }
 
+// GitHub-Releases-backed auto-update. electron-builder's "publish" config
+// (package.json) points electron-updater at this repo — no separate update
+// server needed. autoUpdater.checkForUpdatesAndNotify() is a no-op unless
+// app.isPackaged (it reads app-update.yml, which only exists in a packaged
+// build), so this is always safe to call in dev too.
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = false; // we prompt instead, see below
+
+  autoUpdater.on('error', (err) => {
+    console.error(`[updater] ${err?.message || err}`);
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    dialog
+      .showMessageBox(mainWindow, {
+        type: 'info',
+        buttons: ['Restart Now', 'Later'],
+        defaultId: 0,
+        cancelId: 1,
+        title: 'Update ready',
+        message: `VisionStudio ${info.version} has been downloaded.`,
+        detail: 'Restart the app to install the update.',
+      })
+      .then(({ response }) => {
+        if (response === 0) autoUpdater.quitAndInstall();
+      });
+  });
+
+  // Check on launch, then every 4 hours for as long as the app stays open.
+  // checkForUpdatesAndNotify() rejects (e.g. no GitHub releases published
+  // yet, or offline) separately from emitting 'error', so both must be
+  // handled or Electron logs an UnhandledPromiseRejectionWarning.
+  const check = () => autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+    console.error(`[updater] check failed: ${err?.message || err}`);
+  });
+  check();
+  setInterval(check, 4 * 60 * 60 * 1000);
+}
+
 app.whenReady().then(() => {
   startBackend();
   createWindow();
+  setupAutoUpdater();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
