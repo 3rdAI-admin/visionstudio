@@ -24,6 +24,7 @@ Last updated: 2026-09-03 (Archon project created; doc-drift item closed), by ses
 
 | Commit | What | Session |
 |---|---|---|
+| `59afd0f` | Documented iOS/Capacitor build steps + `HOSTED=true` in README/CLAUDE.md; created Archon project `VisionStudio` and seeded 2 tasks from Open Items | `01PbFrBceHHpLS3N8FhU8pqQ` |
 | *(no commit — server state)* | Deployed `backend/index.js` to `vision.th3rdai.com` (Linode, systemd+nginx+TLS); found Gemini geo-blocks that server's IP | `01PTYvucPv97c7RESYj1FDk5` |
 | `57eaa59` | handoff.md: real-device milestone confirmed | `01G4jeWmRThqhH8xZKFyuf1T` |
 | `03dc96a` | Added this handoff.md | `01G4jeWmRThqhH8xZKFyuf1T` |
@@ -51,7 +52,7 @@ Last updated: 2026-09-03 (Archon project created; doc-drift item closed), by ses
   - **What was tried and explicitly NOT pursued further** (user's call, not a technical dead end): tested whether Cloudflare Workers' egress IPs dodge the block (needs the user to auth `wrangler login` — not completed) and whether booting an existing-but-unused `ca-central` Linode (`support`, id `46800153`, was offline) gives a different-region IP — booted it, found no SSH key access, would have needed adding this Mac's key to the Linode account (account-wide Lish access, not scoped to one box) to test via Lish console. **User decided that was too much escalating infra risk for a diagnostic and asked to stop** — the `support` box was shut back down to its prior offline state, nothing else was changed on it. Re-litigate before trying it again.
   - **Where this leaves it**: `vision.th3rdai.com` is a fully working, secured backend — it just can't successfully call Gemini from that specific server's network. Options if picked back up: a fresh Linode in a genuinely different provider/region (not just re-testing the old `support` box), or reconsider a PaaS host (Fly.io/Railway — original plan's fallback, untested) which may have different egress IP reputation. Until resolved, the LAN-IP dev workflow (see Simulator/real-device notes above) is the only working end-to-end path.
 - **`NSAllowsLocalNetworking` in `ios/App/App/Info.plist` is a dev-only ATS exception** — fine for LAN testing, not a substitute for HTTPS hosting. Don't widen it to `NSAllowsArbitraryLoads` as a shortcut.
-- **Doc drift**: README/CLAUDE.md describe only the local two-terminal/`startup.sh` workflow. Nothing yet documents the iOS build-and-run steps or the `HOSTED=true` production path.
+- ~~**Doc drift**: README/CLAUDE.md describe only the local two-terminal/`startup.sh` workflow.~~ **RESOLVED 2026-09-03** (`59afd0f`): README now has "iOS app (Capacitor)" and "Hosted / production backend (HOSTED=true)" sections covering build/sync, Simulator + real-device run (incl. `devicectl`), and the full `HOSTED=true` contract; CLAUDE.md has a pointer to both.
 - **Python permission rules, port-settings UI**: both previously flagged issues are resolved (permission rules were already clean when checked; `AppSettings.tsx` was intentionally removed in `93b26d3` since it no longer applies to a native build).
 
 ## Conventions this repo has settled on
