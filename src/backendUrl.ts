@@ -15,6 +15,16 @@ const BUILD_DEFAULT = import.meta.env.VITE_BACKEND_URL as string | undefined;
 // backend/index.js's own default port.
 const DEV_DEFAULT = 'http://localhost:3001';
 
+// Shared "this request came from a real copy of the app" secret, baked in
+// at build time via VITE_APP_SECRET (see ios/build-release.sh — the only
+// build that needs it, since it's the only one talking to the shared hosted
+// backend; Electron forks its own local backend and never sets HOSTED, so
+// the check never triggers there regardless of what's baked in). Not
+// per-user auth — every install of a given build shares the same value —
+// it's a bot/scanner filter for the public hosted backend, not access
+// control. The server only enforces this when HOSTED=true.
+const APP_SECRET = import.meta.env.VITE_APP_SECRET as string | undefined;
+
 /**
  * Backend base URL. Order of precedence: a value saved via setBackendUrl()
  * (e.g. from a future settings UI) > VITE_BACKEND_URL baked in at build time
@@ -33,4 +43,14 @@ export function setBackendUrl(url: string): void {
 
 export function resetBackendUrl(): void {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+/**
+ * Headers every backend request should send, beyond Content-Type/X-API-Key
+ * (which callers already set per-request). Currently just the shared app
+ * secret when one was baked into this build; an empty object otherwise, so
+ * spreading it into a headers object is always safe.
+ */
+export function getAppSecretHeaders(): Record<string, string> {
+  return APP_SECRET ? { 'X-App-Secret': APP_SECRET } : {};
 }

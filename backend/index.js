@@ -1,6 +1,7 @@
 require('dotenv').config({ path: './.env' });
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const app = express();
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -12,6 +13,25 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // would let a stranger kill/respawn the process, and the fallback would let
 // anyone burn the deployer's own Gemini quota with no key of their own.
 const HOSTED = process.env.HOSTED === 'true';
+
+// Hosted deployments sit behind nginx (see README's "Hosted / production
+// backend" section) — without this, express-rate-limit and req.ip would see
+// every request as coming from nginx's own IP (127.0.0.1), making the limiter
+// either share one bucket across all real clients or (worse) let one bad
+// actor's rate-limit response affect everyone. `1` trusts exactly one hop
+// (the local nginx reverse proxy), matching nginx's own X-Forwarded-For.
+if (HOSTED) {
+  app.set('trust proxy', 1);
+}
+
+// Shared "this request came from a real copy of the app" secret (see
+// src/backendUrl.ts's getAppSecretHeaders()). Not per-user auth — every
+// install of a given build shares the same value — it filters out random
+// internet scanners/scripts hitting a public hosted URL, since they won't
+// know this value. Only enforced when both HOSTED=true and this env var is
+// set, so a hosted deploy that hasn't configured a secret yet still works
+// exactly as before (opt-in hardening, not a breaking requirement).
+const APP_SECRET = process.env.APP_SECRET;
 
 // Capacitor's iOS WebView serves the app from a fixed native scheme, not an
 // http(s) origin — allow those alongside the configurable web origin so the
@@ -43,6 +63,30 @@ app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} ${req.method} ${req.url} ${res.statusCode} ${ms}ms ${len}B`);
   });
   next();
+});
+
+// Reject requests without the shared app secret when one is configured on a
+// hosted deployment — see APP_SECRET above. Runs before route handlers so an
+// unrecognized caller never reaches Gemini-calling code.
+if (HOSTED && APP_SECRET) {
+  app.use((req, res, next) => {
+    if (req.headers['x-app-secret'] !== APP_SECRET) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  });
+}
+
+// Generous per-IP limit on the expensive endpoint — enough for real
+// interactive use (nobody submits dozens of edits a minute by hand), low
+// enough to blunt a scanner or script hammering the server. Only /api/generate
+// is limited; /api/key-status is cheap and unauthenticated-safe either way.
+const generateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please wait a moment and try again.' },
 });
 
 app.get('/api/key-status', (req, res) => {
@@ -90,7 +134,7 @@ if (!HOSTED) {
   });
 }
 
-app.post('/api/generate', async (req, res) => {
+app.post('/api/generate', generateLimiter, async (req, res) => {
   try {
     const { prompt, image } = req.body || {};
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {

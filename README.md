@@ -255,9 +255,19 @@ Set `HOSTED=true` in the deployment's environment to disable both:
 # systemd unit env file, e.g. /etc/visionstudio-backend.env
 HOSTED=true
 PORT=3011
+APP_SECRET=<a long random string — see below>
 ```
 
 Deploy like any other Node service behind a reverse proxy: app in `/opt/<name>`, secrets in a root-only env file (`chmod 600`), a systemd unit, nginx reverse-proxy + Let's Encrypt. **Do not set `MemoryDenyWriteExecute=true`** in the systemd unit's hardening block — it crashes Node with a fatal V8 OOM (JIT needs executable-memory allocation that directive blocks); every other hardening directive is fine.
+
+### Hardening a publicly reachable backend
+
+A `HOSTED=true` backend has no server-side Gemini key (safe by design — nobody can spend the deployer's quota), but with nothing else configured it still accepts a request from anyone who knows the URL, as long as they send *some* key-shaped string. Two opt-in layers close that gap:
+
+- **Rate limiting** — `/api/generate` is capped at 20 requests/minute per IP (`express-rate-limit`), always on, no configuration needed. Behind nginx, the systemd deployment sets `app.set('trust proxy', 1)` when `HOSTED=true` so the limiter sees the real client IP, not nginx's.
+- **Shared app secret** — set `APP_SECRET` in the server's env file to a long random value (`openssl rand -hex 24`) and bake the same value into a client build via `VITE_APP_SECRET` (e.g. `VITE_APP_SECRET=<value> npm run build:ios:release`). The backend then rejects any request missing a matching `X-App-Secret` header with `403` before it reaches Gemini-calling code — filters out random internet scanners/scripts, since they won't know the value. **This is not per-user authentication** — every install of a given build shares the same secret — it raises the bar past "anyone who finds the URL," not to "only authorized people." If `APP_SECRET` is unset on the server, this check is skipped entirely (backward compatible with older builds / no-hardening deployments).
+
+Neither the server's `APP_SECRET` nor a build's `VITE_APP_SECRET` should ever be committed — keep them in the env file / your shell, never in a script or `.env.example`.
 
 Note: Google's Gemini API has been observed geo/IP-reputation-blocking requests from at least one datacenter IP range ("User location is not supported for the API use.") even with a valid key that works fine from a residential/office IP. **This isn't a Linode-wide issue** — it was specific to the `us-lax` (Los Angeles) region; a `us-east` (Newark, NJ) Linode reaches `generativelanguage.googleapis.com` fine. Verify a hosted deployment can actually reach `generativelanguage.googleapis.com` before assuming a `HOSTED=true` deploy is fully working end-to-end — a quick check: `curl -s https://generativelanguage.googleapis.com/v1beta/models?key=$GOOGLE_API_KEY` from the server itself should return a model list, not an error.
 

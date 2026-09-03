@@ -2,7 +2,25 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (**hosted-backend Gemini geo-block RESOLVED** — relocated to a new us-east Linode, `vision.th3rdai.com` repointed, verified end-to-end incl. a real device install with no LAN dependency), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+Last updated: 2026-09-03 (hosted backend hardened against unauthenticated abuse — rate limiting + a shared app secret, both live on `vision.th3rdai.com`), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+
+## 🔒 Hosted backend hardening (rate limiting + shared app secret) — 2026-09-03
+
+User asked: since anyone who gets the `.ipa` talks to the same shared `vision.th3rdai.com` server (Gemini billing stays isolated per-person via BYOK, but the server itself had zero access control), and the plan is this `.ipa` could end up more widely shared (TestFlight/App Store, or just passed around) rather than staying ad-hoc-only — worth locking down now, not later.
+
+**What shipped**:
+- `backend/index.js`: `express-rate-limit` on `/api/generate` only (20 req/min per IP) — always on, no config needed. `app.set('trust proxy', 1)` when `HOSTED=true` so the limiter sees real client IPs through nginx, not nginx's own `127.0.0.1`.
+- An opt-in shared-secret gate: if the server has `APP_SECRET` set in its env, every request must carry a matching `X-App-Secret` header or gets `403` before reaching any Gemini-calling code. If `APP_SECRET` is unset, this check doesn't run at all — fully backward compatible, a hosted deploy that hasn't opted in still works exactly as before.
+- Frontend: new `getAppSecretHeaders()` in `src/backendUrl.ts`, reading a build-time `VITE_APP_SECRET` — spread into every backend `fetch` call (`App.tsx`'s two `/api/generate` calls, `useApiKey.ts`'s `/api/key-status` and test-key calls). Returns `{}` when unset, so it's always safe to spread.
+- `ios/build-release.sh` passes through `VITE_APP_SECRET` (optional — unset is fine, matches the server-side opt-in).
+- **This is explicitly not per-user authentication** — every install of a given build shares one secret. It's a bot/scanner filter (raises the bar past "anyone who finds the URL and can craft a request"), not real access control. Said plainly in the README so a future session doesn't mistake it for more than it is.
+- **Electron's macOS app needs none of this** — it forks its own local backend with `HOSTED` unset, never talks to the shared server, so the secret check never triggers regardless of what's baked in. Deliberately did not touch `electron:build`.
+
+**Deployed and verified live on `vision.th3rdai.com`** (not just tested locally): confirmed a request with no secret header now gets `403`, a request with the correct secret gets through, and a full real Gemini generation succeeds end-to-end through the hardened server. Confirmed the rate limiter actually triggers `429` after 20 rapid requests, tested locally against an isolated port before deploying.
+
+**Secret storage**: the actual `APP_SECRET` value is in `/etc/visionstudio-backend.env` on the `us-east` Linode (`45.33.73.49`) — root-only, `chmod 600`, not reproduced here. Generate a new one (`openssl rand -hex 24`) if it needs rotating; update both the server's env file and any `VITE_APP_SECRET` used for future release builds, or old `.ipa`s stop working until rebuilt.
+
+**RESOLVED — confirmed on the real device 2026-09-03**: rebuilt with `VITE_APP_SECRET` baked in, installed + launched on the physical iPhone once it reconnected, and confirmed via `journalctl` that the app's own `/api/key-status` requests got `200`/`304` (correctly authenticated) at the exact moment the app launched — while, moments later in the same log window, an unrelated bot scanning for `/wp-login.php` and `/wp-json/` got `403` right next to them. Clean side-by-side proof the hardening works exactly as intended: legitimate app traffic sails through, drive-by scanning gets rejected before touching any real logic.
 
 ## 🎉 Hosted backend geo-block: RESOLVED 2026-09-03
 

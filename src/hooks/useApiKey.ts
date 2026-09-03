@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { getBackendUrl } from '../backendUrl';
+import { getBackendUrl, getAppSecretHeaders } from '../backendUrl';
 
 const STORAGE_KEY = 'gemini_api_key';
 const GEMINI_KEY_REGEX = /^AIzaSy[A-Za-z0-9_-]{33}$/;
@@ -64,7 +64,7 @@ export function useApiKey(): UseApiKeyReturn {
   // distinct "using server key" state instead of looking identical to "no key".
   useEffect(() => {
     let cancelled = false;
-    fetch(getBackendUrl('/api/key-status'))
+    fetch(getBackendUrl('/api/key-status'), { headers: getAppSecretHeaders() })
       .then((r) => r.json())
       .then((data) => {
         if (!cancelled) setServerKeyConfigured(!!data.configured);
@@ -131,6 +131,7 @@ export function useApiKey(): UseApiKeyReturn {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...getAppSecretHeaders(),
             'X-API-Key': keyToTest,
           },
           body: JSON.stringify({
