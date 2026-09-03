@@ -2,7 +2,22 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (merged the dependabot Vite 6→8 bump, PR #6 — no PRs left open, only routine maintenance from here), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+Last updated: 2026-09-03 (fixed two TCC hard-crashes on iOS — Save to Photos and Take Photo, both missing Info.plist usage-description keys — with a caching gotcha worth remembering for the next one), by session `01PbFrBceHHpLS3N8FhU8pqQ`.
+
+## 🐛 Two TCC hard-crashes on iOS — FIXED 2026-09-03 (PR #19, PR #22) — read this before adding any privacy-sensitive API
+
+Two separate reports, same root cause class: **iOS hard-crashes (SIGABRT) any app that touches a privacy-sensitive API without the matching `Info.plist` usage-description key** — not a soft failure, not a caught exception, an immediate unrecoverable crash.
+
+- **"Save to Photos" crashed instantly** (PR #19, `d66394d`): the Export share sheet's "Save Image" action and the native long-press-to-save gesture both write to Photos, which needs `NSPhotoLibraryAddUsageDescription`. Missing entirely. Added it.
+- **"Take Photo" in the import picker crashed instantly** (PR #22, `8936d54`): the plain `<input type="file">` import control offers Photo Library / Take Photo / Choose File on iOS: `Take Photo` invokes the camera, which needs `NSCameraUsageDescription`. Also missing. Added it.
+
+**How both were diagnosed — this is the reusable technique, use it for the next one instead of guessing**: `xcrun devicectl device process launch --console --device <id> <bundle-id>` launches the app with a live-attached console that prints `App terminated due to signal 6` the instant it crashes (SIGABRT here every time). Then `xcrun devicectl device info files --device <id> --domain-type systemCrashLogs` lists crash reports on the device by filename/timestamp, and `xcrun devicectl device copy from --device <id> --domain-type systemCrashLogs --source <filename> --destination <local-path>` pulls the actual `.ips` crash report. Parse it as `json.loads(open(path).read().split('\n', 1)[1])` (the file is a one-line JSON header, a newline, then the real JSON body) — `body['termination']['details']` names the exact missing `Info.plist` key in plain English, every time. No symbolication, no guessing, no Xcode Organizer needed.
+
+**Gotcha that cost real time verifying PR #22**: after installing the fixed build **in place** over the already-crashed install, the exact same crash kept recurring — even though `plutil -p` on the newly-built `.ipa`'s own `Info.plist` proved the key was there. **iOS's TCC subsystem caches the "attempted access without a usage description" denial at the app's data-container level**, independent of the binary — an in-place reinstall keeps the same container. Only a full **delete the app, then fresh install** cleared the cached denial and let the real permission prompt appear. **If you're verifying a fix for one of these crashes, delete the app first** — don't trust an in-place reinstall to prove it, even if the binary is provably correct.
+
+**Also note**: a full delete wipes `localStorage` (the saved API key, same as the earlier stale-`backend_url` issue) — the user has to re-enter their Gemini API key in Settings after this kind of verification. Not a bug, just an expected side effect of the only reliable verification method for this crash class.
+
+**If a future session adds any new privacy-sensitive capability** (microphone, contacts, location, motion, tracking, etc.) to the iOS app, check `Info.plist` for the matching `NSXxxUsageDescription` key *before* shipping it — this exact crash class will recur otherwise, and it always looks identical (an unexplained instant app-quit with no on-screen error) until you pull the crash report.
 
 ## 📦 Dependabot Vite 6→8 bump merged (PR #6)
 
