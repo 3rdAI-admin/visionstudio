@@ -1062,7 +1062,11 @@ export default function App() {
       </footer>
 
       {/* API Key Settings Modal */}
-      <ApiKeySettings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <ApiKeySettings
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        apiKeyHook={apiKeyHook}
+      />
     </div>
   );
 }

@@ -6,20 +6,29 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Eye, EyeOff, Key, AlertTriangle, ExternalLink, Check } from 'lucide-react';
-import { useApiKey } from '../hooks/useApiKey';
+import type { UseApiKeyReturn } from '../hooks/useApiKey';
 
 export interface ApiKeySettingsProps {
   isOpen: boolean;
   onClose: () => void;
+  apiKeyHook: UseApiKeyReturn;
 }
 
 /**
  * Settings modal for managing Gemini API key.
  * Allows users to add, test, edit, and remove their API key with BYOK pattern.
+ *
+ * Takes apiKeyHook as a prop rather than calling useApiKey() itself — the
+ * hook holds React state (the loaded key, its status), and a second
+ * independent call site would get its own separate copy of that state
+ * instead of sharing it with App.tsx, which is what actually sends the
+ * X-API-Key header on edit/generate requests. Saving a key here previously
+ * updated only this component's own copy, leaving App.tsx's apiKeyHook.apiKey
+ * null until the app was fully reloaded.
  */
-export default function ApiKeySettings({ isOpen, onClose }: ApiKeySettingsProps) {
+export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySettingsProps) {
   const { apiKey, status, isTesting, setApiKey, removeApiKey, testApiKey, validateFormat } =
-    useApiKey();
+    apiKeyHook;
   const [inputValue, setInputValue] = useState(apiKey || '');
   const [showKey, setShowKey] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
