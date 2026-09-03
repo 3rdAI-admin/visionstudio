@@ -24,7 +24,7 @@ import { Share } from '@capacitor/share';
 
 import { useEditHistory } from './hooks/useEditHistory';
 import { useApiKey } from './hooks/useApiKey';
-import { getBackendUrl } from './backendUrl';
+import { getBackendUrl, getAppSecretHeaders } from './backendUrl';
 import ApiKeySettings from './components/ApiKeySettings';
 import logoEye from '../assets/VisionStudio-mark-only.svg';
 
@@ -315,6 +315,7 @@ export default function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAppSecretHeaders(),
           ...(apiKeyHook.apiKey && { 'X-API-Key': apiKeyHook.apiKey }),
         },
         body: JSON.stringify({
@@ -361,6 +362,7 @@ export default function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAppSecretHeaders(),
           ...(apiKeyHook.apiKey && { 'X-API-Key': apiKeyHook.apiKey }),
         },
         body: JSON.stringify({ prompt: genPrompt }),

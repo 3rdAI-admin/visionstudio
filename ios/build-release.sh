@@ -5,6 +5,13 @@
 # a one-off test build (e.g. a LAN IP) by setting the env var before calling
 # this script.
 #
+# VITE_APP_SECRET, if set, is baked in and sent as X-App-Secret on every
+# backend request (see src/backendUrl.ts, backend/index.js's APP_SECRET) —
+# must match the value configured on the target server, or every request
+# gets a 403. Not required: the backend only enforces it when the server has
+# its own APP_SECRET configured, so an unset value here is fine against a
+# server that hasn't opted into that hardening yet.
+#
 # Requires (one-time, manual, in the Apple Developer portal / Xcode):
 #   - An Apple Distribution certificate for team 9LRPX62LGN (Automatic
 #     signing can create this on first archive if Xcode is signed into an
@@ -26,7 +33,7 @@ VITE_BACKEND_URL="${VITE_BACKEND_URL:-https://vision.th3rdai.com}"
 
 echo "==> Building web bundle (VITE_BACKEND_URL=$VITE_BACKEND_URL)"
 cd "$ROOT"
-VITE_BACKEND_URL="$VITE_BACKEND_URL" npm run build
+VITE_BACKEND_URL="$VITE_BACKEND_URL" VITE_APP_SECRET="${VITE_APP_SECRET:-}" npm run build
 npx cap sync ios
 
 echo "==> Bumping build number"
