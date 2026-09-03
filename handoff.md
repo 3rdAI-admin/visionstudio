@@ -2,7 +2,11 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (fixed the Cartoonize preset — backgrounds weren't cartoonizing, PR #17 — then re-synced the Archon board to pick up #16/#17), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+Last updated: 2026-09-03 (fixed the broken favicon — PR #18, merged — Archon board now has zero open tasks), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+
+## 🖼️ Favicon fixed (PR #18)
+
+`index.html`'s favicon `<link>` referenced a file the rebrand deleted — resolved with a proper fix, not a patch: `assets/` was never actually a real static-serving directory (it only worked for `App.tsx`'s logo import via Vite's module graph, which a `<link href>` isn't part of), so pointing it at a different `assets/` file would have stayed broken too. Added `public/favicon.png` (new `public/` directory, Vite's standard convention — always copied verbatim into `dist/` and resolves correctly in both dev and prod) generated from `VisionStudio-mark-only.svg` via `sharp`. Verified via a real built `dist/` served through `vite preview`, not just visual inspection. This closes out the Archon board's last `todo` — all 19 tasks are now `done`.
 
 ## 🎨 Cartoonize preset fixed — background wasn't cartoonizing (PR #17)
 
