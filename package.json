@@ -22,7 +22,8 @@
     "e2e:headed": "playwright test --headed",
     "electron:dev": "npm run build && electron electron/main.js",
     "electron:build": "npm run build && electron-builder",
-    "electron:release": "npm run build && electron-builder --publish always"
+    "electron:release": "npm run build && electron-builder --publish always",
+    "build:ios:release": "bash ios/build-release.sh"
   },
   "build": {
     "appId": "com.th3rdai.visionstudio",
