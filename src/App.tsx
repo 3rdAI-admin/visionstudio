@@ -18,6 +18,9 @@ import {
   Settings,
 } from 'lucide-react';
 import { removeBackground } from '@imgly/background-removal';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 import { useEditHistory } from './hooks/useEditHistory';
 import { useApiKey } from './hooks/useApiKey';
@@ -406,8 +409,36 @@ export default function App() {
     history.clear();
   };
 
-  const downloadImage = () => {
+  const downloadImage = async () => {
     if (!editedImage) return;
+
+    // The <a download> pattern below works on the web but is a silent no-op
+    // in Capacitor's WKWebView shell — there's no browser chrome to catch
+    // the click, and iOS never reliably honored `download` anyway. Native
+    // builds instead write the file into the app's cache dir and hand it to
+    // the OS share sheet, where "Save Image" writes to Photos.
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const fileName = `visionstudio-${Date.now()}.png`;
+        const base64Data = editedImage.split(',')[1] ?? editedImage;
+        const { uri } = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache,
+        });
+        await Share.share({ url: uri });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        // The iOS Share plugin rejects with this exact string when the user
+        // dismisses the share sheet without picking an action — that's a
+        // normal cancel, not a failure, so don't show an error for it.
+        if (message !== 'Share canceled') {
+          setError(extractFriendlyError(message));
+        }
+      }
+      return;
+    }
+
     const link = document.createElement('a');
     link.href = editedImage;
     link.download = `visionstudio-${Date.now()}.png`;
