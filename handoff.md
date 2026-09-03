@@ -2,7 +2,13 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (docs (README/CLAUDE.md/USERSGUIDE.md) brought current, then a full Archon board sync — one task per merged PR, backfilled from the repo snapshot; found and flagged a real, still-open bug: the favicon is broken), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+Last updated: 2026-09-03 (fixed the Cartoonize preset — backgrounds weren't cartoonizing, PR #17 — then re-synced the Archon board to pick up #16/#17), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+
+## 🎨 Cartoonize preset fixed — background wasn't cartoonizing (PR #17)
+
+User reported: subject cartoonizes great, background still looks like a photo, worse than it used to be months ago. Checked `git log -S` on the prompt string — it hasn't changed since the initial commit, so this is Gemini model behavior drift on Google's side, not a regression here. Fixed by making the prompt explicit that the *entire* image (including background) should get the same flat cartoon shading and bold outlines, rather than leaving that to the model's judgment.
+
+**Verified with a real side-by-side comparison, not just a plausible-sounding wording tweak**: generated a realistic test photo via the Gemini API directly (a dog on a porch with a detailed house/trees background — no real user photo used), then ran both the old and new prompt against the same source image. Old prompt reproduced the exact reported symptom (nicely cartoonized dog, photorealistic house/porch/trees). New prompt produced visibly more consistent cartoon styling across trees, sky, and house. Board re-synced afterward to add tasks for this PR and #16 (persistent selected-indicator on preset buttons, merged just before it) — both were missing from the backfill done earlier today since they landed after that sync ran.
 
 ## 📋 Archon board synced 2026-09-03
 
