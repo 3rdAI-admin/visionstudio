@@ -12,8 +12,14 @@ const STORAGE_KEY = 'backend_url';
 const BUILD_DEFAULT = import.meta.env.VITE_BACKEND_URL as string | undefined;
 
 // Local development fallback when no VITE_BACKEND_URL is set — matches
-// backend/index.js's own default port.
-const DEV_DEFAULT = 'http://localhost:3001';
+// backend/index.js's own default port. Derived from the page's own hostname
+// (not a hardcoded 'localhost') so it works both from the Mac itself and
+// from another device on the LAN loading the dev server's --host=0.0.0.0
+// address (e.g. a phone browsing to http://192.168.x.x:3002) — a hardcoded
+// 'localhost' would resolve to the phone itself in that case, not the Mac.
+// `window` is undefined in non-browser contexts (SSR/tests), hence the guard.
+const DEV_DEFAULT =
+  typeof window !== 'undefined' ? `http://${window.location.hostname}:3001` : 'http://localhost:3001';
 
 // Shared "this request came from a real copy of the app" secret, baked in
 // at build time via VITE_APP_SECRET (see ios/build-release.sh — the only
