@@ -116,7 +116,7 @@ export default function ApiKeySettings({ isOpen, onClose }: ApiKeySettingsProps)
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="AIzaSy..."
                   className="w-full px-3 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg pr-10
-                           text-sm font-mono text-white/80 placeholder:text-white/20
+                           text-base sm:text-sm font-mono text-white/80 placeholder:text-white/20
                            focus:outline-none focus:border-brand-blue transition-colors"
                 />
                 <button
