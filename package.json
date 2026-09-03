@@ -1,7 +1,7 @@
 {
   "name": "visionstudio",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Browser-based image editor and converter powered by Gemini.",
   "author": "th3rdai",
   "type": "module",
@@ -21,17 +21,25 @@
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
     "electron:dev": "npm run build && electron electron/main.js",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "electron:release": "npm run build && electron-builder --publish always"
   },
   "build": {
     "appId": "com.th3rdai.visionstudio",
     "productName": "VisionStudio",
-    "files": ["dist/**/*", "electron/**/*"],
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
     "extraResources": [
       {
         "from": "backend",
         "to": "backend",
-        "filter": ["**/*", "!.env", "!**/*.backup"]
+        "filter": [
+          "**/*",
+          "!.env",
+          "!**/*.backup"
+        ]
       }
     ],
     "directories": {
@@ -39,7 +47,11 @@
       "buildResources": "electron/build"
     },
     "mac": {
-      "target": ["dmg", "pkg"],
+      "target": [
+        "dmg",
+        "pkg",
+        "zip"
+      ],
       "category": "public.app-category.graphics-design",
       "icon": "electron/build/icon.icns",
       "hardenedRuntime": true,
@@ -47,7 +59,12 @@
       "entitlements": "electron/entitlements.mac.plist",
       "entitlementsInherit": "electron/entitlements.mac.plist"
     },
-    "afterSign": "electron/notarize.js"
+    "afterSign": "electron/notarize.js",
+    "publish": {
+      "provider": "github",
+      "owner": "3rdAI-admin",
+      "repo": "visionstudio"
+    }
   },
   "dependencies": {
     "@capacitor/core": "^8.5.1",
@@ -58,6 +75,7 @@
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
+    "electron-updater": "^6.8.9",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",

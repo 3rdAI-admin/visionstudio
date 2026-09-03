@@ -260,3 +260,17 @@ PORT=3011
 Deploy like any other Node service behind a reverse proxy: app in `/opt/<name>`, secrets in a root-only env file (`chmod 600`), a systemd unit, nginx reverse-proxy + Let's Encrypt. **Do not set `MemoryDenyWriteExecute=true`** in the systemd unit's hardening block — it crashes Node with a fatal V8 OOM (JIT needs executable-memory allocation that directive blocks); every other hardening directive is fine.
 
 Note: Google's Gemini API has been observed geo/IP-reputation-blocking requests from at least one datacenter IP range ("User location is not supported for the API use.") even with a valid key that works fine from a residential/office IP. Verify a hosted deployment can actually reach `generativelanguage.googleapis.com` before assuming a `HOSTED=true` deploy is fully working end-to-end.
+
+## macOS app auto-updates
+
+The Electron macOS build (`npm run electron:build`) checks GitHub Releases for updates on launch and every 4 hours via [`electron-updater`](https://www.electron.build/auto-update) — no separate update server. When a newer version is found it downloads in the background and prompts to restart once ready.
+
+To cut a release:
+
+```bash
+GH_TOKEN=<a GitHub token with repo scope> npm run electron:release
+```
+
+This builds and **publishes** the `.dmg`/`.pkg`/`.zip` plus the `latest-mac.yml` manifest directly to a new GitHub Release on this repo (tag = the `version` in `package.json` — bump it first). `electron-updater` requires the `zip` target specifically (not just `dmg`/`pkg`) — macOS updates are applied by unpacking the zip over the existing `.app`, not by re-running the installer — so don't remove `zip` from `mac.target` in `package.json`.
+
+`npm run electron:build` (no `GH_TOKEN`, no `--publish`) still works for local test builds — it just doesn't publish anywhere, matching how `notarize.js` already skips notarization without Apple credentials set.
