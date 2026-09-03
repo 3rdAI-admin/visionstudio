@@ -16,6 +16,7 @@ import {
   Undo,
   Redo,
   Settings,
+  Check,
 } from 'lucide-react';
 import { removeBackground } from '@imgly/background-removal';
 import { Capacitor } from '@capacitor/core';
@@ -829,18 +830,27 @@ export default function App() {
                           label: 'Cartoonize',
                           prompt: 'Convert this image into a clean 2D cartoon illustration style',
                         },
-                      ].map((hint, i) => (
-                        <button
-                          key={i}
-                          onClick={() => {
-                            setPrompt(hint.prompt);
-                            if (error) setError(null);
-                          }}
-                          className="w-full px-3 py-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-brand-blue rounded text-[10px] font-medium uppercase tracking-widest text-white/80 hover:text-white text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
-                        >
-                          {hint.label}
-                        </button>
-                      ))}
+                      ].map((hint, i) => {
+                        const isSelected = prompt === hint.prompt;
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              setPrompt(hint.prompt);
+                              if (error) setError(null);
+                            }}
+                            aria-pressed={isSelected}
+                            className={`w-full px-3 py-2 rounded text-[10px] font-medium uppercase tracking-widest text-left transition-colors flex items-center justify-between gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue ${
+                              isSelected
+                                ? 'bg-brand-gradient text-white border border-transparent'
+                                : 'bg-white/10 hover:bg-white/15 border border-white/20 hover:border-brand-blue text-white/80 hover:text-white'
+                            }`}
+                          >
+                            <span>{hint.label}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
