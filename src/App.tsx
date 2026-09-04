@@ -481,7 +481,10 @@ export default function App() {
           where env(safe-area-inset-top) is 0. */}
       <header
         className="h-14 border-b border-white/10 bg-[#161616] sticky top-0 z-30 flex items-center px-3 sm:px-6"
-        style={{ paddingTop: 'env(safe-area-inset-top)', height: 'calc(3.5rem + env(safe-area-inset-top))' }}
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          height: 'calc(3.5rem + env(safe-area-inset-top))',
+        }}
       >
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-2">
           <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
@@ -571,7 +574,11 @@ export default function App() {
                   aria-label="Toggle before/after comparison"
                   title="Toggle before/after comparison"
                 >
-                  {compareMode ? <Square className="w-3.5 h-3.5 sm:w-3 sm:h-3" /> : <Columns className="w-3.5 h-3.5 sm:w-3 sm:h-3" />}
+                  {compareMode ? (
+                    <Square className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                  ) : (
+                    <Columns className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                  )}
                   <span className="hidden sm:inline">{compareMode ? 'Single' : 'Compare'}</span>
                 </button>
                 <button

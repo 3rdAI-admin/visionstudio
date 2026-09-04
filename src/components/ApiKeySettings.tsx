@@ -29,7 +29,12 @@ export interface ApiKeySettingsProps {
  * updated only this component's own copy, leaving App.tsx's apiKeyHook.apiKey
  * null until the app was fully reloaded.
  */
-export default function ApiKeySettings({ isOpen, onClose, apiKeyHook, modelHook }: ApiKeySettingsProps) {
+export default function ApiKeySettings({
+  isOpen,
+  onClose,
+  apiKeyHook,
+  modelHook,
+}: ApiKeySettingsProps) {
   const { apiKey, status, isTesting, setApiKey, removeApiKey, testApiKey, validateFormat } =
     apiKeyHook;
   const [inputValue, setInputValue] = useState(apiKey || '');
@@ -125,8 +130,8 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook, modelHook 
             <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3 mb-4 flex gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-yellow-500/80 leading-relaxed">
-                Your Nano Banana API Key is stored in browser localStorage and sent with each request.
-                Use only on trusted devices. Never share screenshots of this page.
+                Your Nano Banana API Key is stored in browser localStorage and sent with each
+                request. Use only on trusted devices. Never share screenshots of this page.
               </p>
             </div>
 
@@ -189,7 +194,9 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook, modelHook 
             {testResult === 'error' && (
               <div className="mb-4 p-2 bg-red-500/5 border border-red-500/20 rounded-lg flex items-center gap-2">
                 <X className="w-4 h-4 text-red-500" />
-                <span className="text-xs text-red-500/90">Invalid Nano Banana API Key or test failed</span>
+                <span className="text-xs text-red-500/90">
+                  Invalid Nano Banana API Key or test failed
+                </span>
               </div>
             )}
 

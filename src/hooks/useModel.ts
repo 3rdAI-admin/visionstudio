@@ -17,8 +17,16 @@ export interface ModelOption {
 // Mirrors backend/index.js's MODELS — used as the picker's content until
 // /api/models responds, and as a fallback if that request fails.
 const FALLBACK_MODELS: ModelOption[] = [
-  { id: 'gemini-3.1-flash-image', label: 'Nano Banana 2', description: 'Default — fast, ~$0.067/image' },
-  { id: 'gemini-3-pro-image', label: 'Nano Banana Pro', description: 'Higher quality, ~$0.13/image' },
+  {
+    id: 'gemini-3.1-flash-image',
+    label: 'Nano Banana 2',
+    description: 'Default — fast, ~$0.067/image',
+  },
+  {
+    id: 'gemini-3-pro-image',
+    label: 'Nano Banana Pro',
+    description: 'Higher quality, ~$0.13/image',
+  },
 ];
 const FALLBACK_DEFAULT = FALLBACK_MODELS[0].id;
 
@@ -51,7 +59,9 @@ export function useModel(): UseModelReturn {
         // removed), fall back to the server's default instead of sending an
         // id the backend will reject.
         setSelectedModelState((current) =>
-          data.models.some((m: ModelOption) => m.id === current) ? current : data.default || FALLBACK_DEFAULT,
+          data.models.some((m: ModelOption) => m.id === current)
+            ? current
+            : data.default || FALLBACK_DEFAULT,
         );
       })
       .catch(() => {
