@@ -2,7 +2,25 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (fixed a regression that broke the macOS Electron app — PR #21, confirmed working by the user on a rebuilt package), by session `01VWQ2iPrjx7eUkMxbcZZdt5`.
+Last updated: 2026-09-03 (documented a Cartoonize/Ghibli-style limitation on busy scenes — investigated, not fixable from the app side), by session `014U8Ba4pj7vYkcxTSmGRb2Z`.
+
+## ⚠️ Cartoonize (and likely Ghibli) silently no-ops on busy/detailed scenes — INVESTIGATED 2026-09-03, not a code bug
+
+User reported: photos with a lot of detail (a crowded scene with many people/objects) don't get cartoonized — the button runs, returns a `200` with a real image, no error anywhere, but the result looks basically identical to the original photo. Not a crash, not a silent failure in our code — `gemini-2.5-flash-image` itself is declining to restyle the image.
+
+**Reproduced directly against the real API**, isolated from the app: generated a busy test photo (crowded farmers-market street scene, many people/objects/architectural detail) via `/api/generate`, then ran the *exact* current Cartoonize prompt against it. Result: near-pixel-identical to the source, still fully photorealistic. As a control, ran the same unmodified prompt against a simple one-subject photo (a dog on a porch) — that one cartoonized perfectly on the first try. So the trigger is specifically scene complexity/subject count, not the prompt wording, image size, or anything code-side.
+
+**Six approaches tried and ruled out, all against the same busy test scene:**
+1. Current prompt as-is — no-op (baseline reproduction of the bug).
+2. A substantially stronger rewrite ("Completely redraw... Do not preserve photographic detail... no matter how complex or busy") — no-op.
+3. An even more explicit rewrite invoking "Pixar concept art" / "children's picture book" and a hard negative constraint against photorealism — no-op.
+4. A rewrite explicitly instructing the model to *simplify* the scene (fewer distinct people, blockier shapes) rather than just restyle it — no-op.
+5. Pre-downscaling + Gaussian-blurring the source image before sending (hypothesis: less input detail → more willingness to restyle) — no-op; the model reconstructed sharp photorealistic detail anyway.
+6. Two-pass generation — feeding the (unchanged) pass-1 output back through Cartoonize a second time, both with the plain prompt and with the strongest prompt — no-op both times, output just shuffles minor details (e.g. clothing color) each pass.
+
+**Conclusion**: this is a real ceiling in `gemini-2.5-flash-image`'s willingness to fully restyle a scene once it has "enough going on" (many people/objects to individually render), not something fixable via prompt engineering, preprocessing, or iteration from this app. The Ghibli preset (added same day, PR #23) uses the same "redraw the entire image" prompt pattern as Cartoonize and likely has the same ceiling on busy scenes, though not separately confirmed.
+
+**If a future session wants to take another pass at this**: worth trying only genuinely different mechanisms, not more prompt wording — e.g. tiling/cropping the image into smaller regions and cartoonizing each separately before recompositing, or a different model/endpoint entirely for style transfer. Don't re-try prompt rewrites; that path is exhausted.
 
 ## 🐛 macOS Electron app broken by an earlier fix, same day — FIXED and confirmed by user (PR #21)
 
