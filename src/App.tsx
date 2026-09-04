@@ -1066,7 +1066,7 @@ export default function App() {
                         Engine
                       </span>
                       <p className="text-[10px] uppercase font-mono text-white/40 tracking-wider">
-                        Nano Banana (Gemini 2.5 Flash Image)
+                        Nano Banana 2 (Gemini 3.1 Flash Image)
                       </p>
                     </div>
                     <div className="space-y-1">

@@ -182,11 +182,16 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     // Create GoogleGenerativeAI instance with the selected API key
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // gemini-2.5-flash-image supports both text-only and image+text input,
-    // and can return text or images in its response. responseModalities tells
-    // it we want both kinds back so it picks the appropriate one.
+    // gemini-3.1-flash-image ("Nano Banana 2") supports both text-only and
+    // image+text input, and can return text or images in its response.
+    // responseModalities tells it we want both kinds back so it picks the
+    // appropriate one. Migrated from gemini-2.5-flash-image (legacy "Nano
+    // Banana"), which Google is shutting down 2026-10-02 — also fixes a
+    // real bug where the old model silently no-op'd (returned an unchanged
+    // photorealistic image) on busy/detailed scenes for style-transfer
+    // prompts like Cartoonize; verified fixed on gemini-3.1-flash-image.
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-image',
+      model: 'gemini-3.1-flash-image',
       generationConfig: { responseModalities: ['Text', 'Image'] },
     });
 

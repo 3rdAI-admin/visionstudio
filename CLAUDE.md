@@ -1,6 +1,6 @@
 # visionstudio — agent context
 
-Browser-based image editor + converter. **React 18 + TypeScript + Vite** frontend, **Node + Express** backend that proxies Google's `gemini-2.5-flash-image` (Nano Banana). See `README.md` for setup/run/API.
+Browser-based image editor + converter. **React 18 + TypeScript + Vite** frontend, **Node + Express** backend that proxies Google's `gemini-3.1-flash-image` (Nano Banana 2). See `README.md` for setup/run/API.
 
 Also ships as a native iOS app via Capacitor (`ios/App/App.xcodeproj`, bundle id `com.th3rdai.visionstudio`) and a native macOS app via Electron (`electron/`, same bundle id, auto-updates from GitHub Releases). The backend supports a `HOSTED=true` production mode for public deployment (disables `/api/restart` and the shared `.env` key fallback — every caller sends its own `X-API-Key`; optionally also gated by a shared `APP_SECRET`/`X-App-Secret` header and per-IP rate limiting on `/api/generate` — see below). A real hosted instance is live at `https://vision.th3rdai.com` (Linode, `us-east`/Newark — **not** `us-lax`, which the Nano Banana API geo-blocks). See `README.md` §§ "iOS app (Capacitor)", "macOS app auto-updates", and "Hosted / production backend" for the full build/deploy steps — don't re-derive them from scratch.
 
@@ -39,11 +39,12 @@ Also ships as a native iOS app via Capacitor (`ios/App/App.xcodeproj`, bundle id
 | Phone photos (5–12 MB) failed with confusing Google errors                                                                                                                    | Gemini's inline-data cap is ~7 MB; the SDK didn't surface that clearly                                       | Client-side `resizeImageIfNeeded()` downscales to 2048 px / 4 MB before upload                                                                          |
 | Latency display lied (`"4.2s (avg)"` was hardcoded)                                                                                                                           | A placeholder shipped to prod                                                                                | `useEffect`-backed `elapsedMs` ticker shows real time during `isProcessing` / `isRemovingBackground`                                                    |
 | Wall-of-text Google errors (`"[GoogleGenerativeAI Error]: Error fetching from https://... [400 Bad Request] API key not valid. Please pass a valid API key. [{...JSON...}]"`) | Raw SDK error message bubbled all the way to the UI                                                          | `friendlyError()` (backend) + `extractFriendlyError()` (frontend) strip the envelope; UI shows just `"API key not valid. Please pass a valid API key."` |
+| Cartoonize (and likely Ghibli) silently no-op'd on busy/detailed photos — returned a `200` with a real but unchanged, still-photorealistic image | `gemini-2.5-flash-image` had a real ceiling on restyling high-complexity scenes; 6 different prompt/preprocessing/two-pass approaches all failed to work around it (see `handoff.md`) | Migrated to `gemini-3.1-flash-image` ("Nano Banana 2") — confirmed fixed: the same busy test scene that failed 6/6 times on the old model cartoonized correctly on the first try, no prompt changes needed. Also required regardless: `gemini-2.5-flash-image` shuts down 2026-10-02. |
 
 ## Working with the backend
 
 - Restart picks up `.env` and code changes. There's no nodemon — kill and re-run `node index.js` after edits.
-- The model `gemini-2.5-flash-image` returns `candidates[].content.parts[].inlineData` for image output. The handler in `index.js` walks the parts looking for `inlineData`; if none, it falls back to `response.text()`. Don't change this without testing both paths.
+- The model `gemini-3.1-flash-image` returns `candidates[].content.parts[].inlineData` for image output. The handler in `index.js` walks the parts looking for `inlineData`; if none, it falls back to `response.text()`. Don't change this without testing both paths.
 - `responseModalities: ['Text', 'Image']` in `generationConfig` is required — without it the model may refuse to return images.
 
 ## When the user says "the app"

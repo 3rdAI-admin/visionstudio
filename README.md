@@ -1,6 +1,6 @@
 # Th3rdAI Vision Studio (visionstudio)
 
-Browser-based image editor and converter that transforms images via natural-language prompts and AI-powered background removal. React + TypeScript frontend, Node/Express backend proxy in front of Google's `gemini-2.5-flash-image` model (Nano Banana), plus client-side background removal.
+Browser-based image editor and converter that transforms images via natural-language prompts and AI-powered background removal. React + TypeScript frontend, Node/Express backend proxy in front of Google's `gemini-3.1-flash-image` model (Nano Banana 2), plus client-side background removal.
 
 > View in AI Studio: https://ai.studio/apps/9516ebad-6c76-4d79-a898-40fd8116c3b3
 
@@ -37,7 +37,7 @@ The same React frontend and Express backend ship four ways:
                               ▼
                     ┌────────────────────────────┐
                     │ Google Generative Language │
-                    │ gemini-2.5-flash-image     │
+                    │ gemini-3.1-flash-image     │
                     └────────────────────────────┘
 
   + @imgly/background-removal runs 100% client-side (WASM, ~5MB model) —
@@ -51,7 +51,7 @@ The same React frontend and Express backend ship four ways:
 ## Prerequisites
 
 - **Node.js** ≥ 18
-- A **Nano Banana API Key** from <https://aistudio.google.com/apikey>. The key must have access to `gemini-2.5-flash-image` (free tier works for low volume; production use needs billing enabled).
+- A **Nano Banana API Key** from <https://aistudio.google.com/apikey>. The key must have access to `gemini-3.1-flash-image` (free tier works for low volume; production use needs billing enabled).
 
 ## Setup
 
@@ -203,7 +203,7 @@ visionstudio/
 | Symptom                                                                                   | Cause / fix                                                                                                                                                                                                                                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `{"error":"... API_KEY_INVALID ..."}`                                                     | `backend/.env` still has placeholder, or wrong key type. Real keys are 39 chars starting with `AIzaSy`. Restart backend after updating.                                                                                                                                                                                                                                                           |
-| `{"error":"models/gemini-2.5-flash-image is not found"}`                                  | Backend's `@google/generative-ai` SDK is too old. `cd backend && npm install @google/generative-ai@latest`                                                                                                                                                                                                                                                                                        |
+| `{"error":"models/gemini-3.1-flash-image is not found"}`                                  | Backend's `@google/generative-ai` SDK is too old. `cd backend && npm install @google/generative-ai@latest`                                                                                                                                                                                                                                                                                        |
 | Browser shows broken-image icons for logos                                                | Hard reload (Cmd-Shift-R). Logos are imported from `../assets/` and served by Vite.                                                                                                                                                                                                                                                                                                               |
 | `CORS policy` errors in browser console                                                   | Frontend running on a port the backend doesn't expect. Set `FRONTEND_ORIGIN` env var (or use the Settings UI's port config, which sets it automatically) to match.                                                                                                                                                                                                                                                                                     |
 | App works on the Mac but fails to process images when opened from a phone on the same Wi-Fi (`http://192.168.x.x:3002`) | Should already be fixed in local dev (the backend allows any LAN-IP origin on the frontend's port when `HOSTED` is unset, and the frontend derives its backend URL from the page's own hostname instead of a hardcoded `localhost`). If you still see this, confirm both `./startup.sh` processes were restarted after pulling the fix. |
