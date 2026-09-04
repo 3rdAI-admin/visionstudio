@@ -25,6 +25,7 @@ import { Share } from '@capacitor/share';
 
 import { useEditHistory } from './hooks/useEditHistory';
 import { useApiKey } from './hooks/useApiKey';
+import { usePinchZoom } from './hooks/usePinchZoom';
 import { getBackendUrl, getAppSecretHeaders } from './backendUrl';
 import ApiKeySettings from './components/ApiKeySettings';
 import logoEye from '../assets/VisionStudio-mark-only.svg';
@@ -149,6 +150,9 @@ export default function App() {
   // API key management
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const apiKeyHook = useApiKey();
+
+  // Pinch-to-zoom/pan on the result preview (not the before/after compare view)
+  const pinchZoom = usePinchZoom();
 
   // Undo/redo handlers
   const handleUndo = () => {
@@ -1005,13 +1009,23 @@ export default function App() {
                         key={editedImage ? 'edited' : 'original'}
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
+                        onAnimationStart={() => pinchZoom.reset()}
                         className="relative shadow-2xl"
                       >
-                        <div className="relative min-w-[200px] min-h-[150px] max-w-full">
+                        <div
+                          className="relative min-w-[200px] min-h-[150px] max-w-full overflow-hidden touch-none"
+                          onTouchStart={pinchZoom.handlers.onTouchStart}
+                          onTouchMove={pinchZoom.handlers.onTouchMove}
+                          onTouchEnd={pinchZoom.handlers.onTouchEnd}
+                        >
                           <img
                             src={editedImage || originalSrc!}
                             alt="Preview"
-                            className="max-w-full h-auto border border-white/5 transition-all duration-700"
+                            className="max-w-full h-auto border border-white/5"
+                            style={{
+                              transform: `translate(${pinchZoom.translateX}px, ${pinchZoom.translateY}px) scale(${pinchZoom.scale})`,
+                              transition: pinchZoom.isZoomed ? 'none' : 'transform 0.2s ease-out',
+                            }}
                             referrerPolicy="no-referrer"
                           />
 
@@ -1020,6 +1034,15 @@ export default function App() {
                           <div className="absolute -top-2 -right-2 border-t border-r border-white/30 w-6 h-6"></div>
                           <div className="absolute -bottom-2 -left-2 border-b border-l border-white/30 w-6 h-6"></div>
                           <div className="absolute -bottom-2 -right-2 border-b border-r border-white/30 w-6 h-6"></div>
+
+                          {pinchZoom.isZoomed && (
+                            <button
+                              onClick={() => pinchZoom.reset()}
+                              className="absolute top-2 right-2 px-2 py-1 bg-black/60 text-white text-[9px] font-bold tracking-widest uppercase rounded pointer-events-auto"
+                            >
+                              Reset Zoom
+                            </button>
+                          )}
                         </div>
 
                         <div className="absolute -bottom-8 left-0 text-[10px] text-white/30 font-mono tracking-widest uppercase">
