@@ -68,3 +68,6 @@ ios/App/App/public/
 
 # Playwright MCP debug artifacts (console/page snapshots from browser-driven testing)
 .playwright-mcp/
+
+# GitNexus code-intelligence index/cache (regenerate: node .gitnexus/run.cjs analyze)
+.gitnexus/
