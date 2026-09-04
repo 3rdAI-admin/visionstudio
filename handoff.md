@@ -2,7 +2,22 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (deployed the `gemini-3.1-flash-image` migration to all four targets — local dev, hosted backend, iOS, macOS), by session `014U8Ba4pj7vYkcxTSmGRb2Z`.
+Last updated: 2026-09-03 (added Restart App / Reload App button to Settings, and finished the Dependabot vulnerability cleanup), by session `016JLFMRd2XBuSUpuCPDGSLb`.
+
+## 🔧 Restart App / Reload App button added to Settings (Electron + iOS) — 2026-09-03
+
+`ApiKeySettings.tsx` gained a platform-conditional button: Electron shows "Restart App" (new `electron/preload.js` exposes `window.electronAPI.restartApp()` via `contextBridge`, IPC'd to `main.js`, which kills the forked backend then calls `app.relaunch()` + `app.exit(0)`); iOS shows "Reload App" (`window.location.reload()`, gated on `Capacitor.getPlatform() === 'ios'`).
+
+**Real bug caught during testing**: `app.exit()` terminates immediately WITHOUT firing `before-quit`/`will-quit` (unlike `app.quit()`) — the existing `before-quit` handler that kills `backendProcess` never ran, so every restart orphaned the old backend fork. Fixed by killing `backendProcess` explicitly in the IPC handler before calling `app.exit()`. Verified against a real packaged build (not just `electron:dev`): connected Playwright to the running `app.asar` via `--remote-debugging-port` (no OS Accessibility permission was grantable in that session's environment, so this was the only way to click through without a human), clicked the button, confirmed the main process PID changed and exactly one healthy backend fork existed after — no orphan. iOS side verified at the code/component level only (same shared component already proven on Electron, calling a basic WKWebView-safe API) — simulator click-through wasn't reachable in that environment either; if you can, do a real tap-through on device/simulator at some point.
+
+## 🔒 Dependabot cleanup: 53 → 1 remaining finding — 2026-09-03
+
+Three real fixes landed (spread across two sessions working concurrently — check `git log --oneline` around `e6e4529`..`01827b2` for the exact sequence):
+- Removed `@google/genai` — present since the initial commit, never imported anywhere (grepped the whole repo + git history to confirm), unrelated to the `@google/generative-ai` SDK the backend actually uses. Was the sole source of a vulnerable transitive `protobufjs` in `backend/package-lock.json` and one of two sources in the root lockfile.
+- `electron-builder` 25→26 — fixed a **critical** `tar` arbitrary-file-write/symlink CVE plus 9 other high-severity findings in its transitive deps (`app-builder-lib`, `builder-util(-runtime)`, `cacache`, `dmg-builder`, etc.) — build-tooling only, never shipped in the app.
+- `electron` 33→44 (11 major versions) — fixed ~30 Electron CVEs. This surfaced a **real regression**: electron-builder's file-copy filter unconditionally excludes any directory literally named `node_modules` before evaluating patterns (upstream issue electron-userland/electron-builder#867), which silently dropped `backend/node_modules` from the packaged app and crashed the forked backend with `Cannot find module 'dotenv'`. Fixed with a new `electron/afterPack.js` hook that copies it in after packaging, before signing. Verified with a real packaged build + real image generation through it, not just a review.
+
+**The 1 remaining finding is a confirmed false positive for this codebase, not something to keep chasing**: `@capacitor/cli` (dev-only, iOS build tooling — never shipped, never reachable at runtime) transitively pins `xcode@3.0.1` → `uuid@7.0.3`, flagged for a missing bounds check in `uuid`'s `v3()`/`v5()`/`v6()` when a custom output buffer + offset is passed in. Checked `node_modules/xcode/lib/pbxProject.js` directly — it only ever calls `uuid.v4()` with no arguments, which already has the correct bounds check (confirmed via the advisory's own PoC). No upstream fix exists yet either way (`xcode`'s latest nightly still pins `uuid: ^7.0.3`, `@capacitor/cli`'s latest stable is `8.5.1` with only nightlies beyond it) — nothing to do here until Capacitor/xcode bump it themselves.
 
 ## ✅ Migrated to `gemini-3.1-flash-image` ("Nano Banana 2") and deployed everywhere — FIXED 2026-09-03, also fixes Cartoonize on busy scenes
 
