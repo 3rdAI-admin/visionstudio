@@ -69,10 +69,13 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
 
   const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
   const isIOS = Capacitor.getPlatform() === 'ios';
+  const [isRestarting, setIsRestarting] = useState(false);
 
   const handleRestart = () => {
+    if (isRestarting) return;
+    setIsRestarting(true);
     if (isElectron) {
-      window.electronAPI!.restartApp();
+      window.electronAPI?.restartApp();
     } else if (isIOS) {
       window.location.reload();
     }
@@ -203,8 +206,9 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
             {(isElectron || isIOS) && (
               <button
                 onClick={handleRestart}
+                disabled={isRestarting}
                 className="w-full px-4 py-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-brand-blue text-white text-[10px] font-bold uppercase tracking-widest rounded-lg
-                         mb-4 transition-colors flex items-center justify-center gap-2
+                         disabled:opacity-40 disabled:cursor-not-allowed mb-4 transition-colors flex items-center justify-center gap-2
                          focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
               >
                 <RotateCw className="w-3.5 h-3.5" />

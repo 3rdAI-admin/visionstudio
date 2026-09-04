@@ -247,6 +247,15 @@ function friendlyError(err) {
 }
 
 const PORT = Number(process.env.PORT) || 3001;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);
+});
+
+// Without this, a port collision (e.g. the Electron app's restart racing the
+// old fork's shutdown) crashes the process with an uncaught 'error' event
+// instead of a readable message — Node's default behavior for EventEmitter
+// 'error' with no listener is to throw.
+server.on('error', (err) => {
+  console.error(`Failed to start server on port ${PORT}: ${err.message}`);
+  process.exit(1);
 });

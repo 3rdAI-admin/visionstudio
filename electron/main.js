@@ -129,8 +129,34 @@ app.on('before-quit', () => {
 // immediately WITHOUT firing before-quit/will-quit (unlike app.quit()), so
 // the forked backend must be killed explicitly here or it's orphaned —
 // confirmed via a real restart that leaked the old backend process.
+//
+// isRestarting guards against a double-click sending this twice: relaunch()
+// called more than once starts multiple new instances on exit (per Electron's
+// own docs), each forking its own backend on the same hardcoded BACKEND_PORT.
+// Also waits for the old backend's 'exit' event (not just calling kill(),
+// which is fire-and-forget) so its port is actually released before the new
+// instance forks its own backend — otherwise the new fork can lose an
+// EADDRINUSE race, and backend/index.js has no listen-error handler to
+// recover from that. A timeout caps the wait in case the process is already
+// dead or hangs on shutdown.
+let isRestarting = false;
 ipcMain.on('restart-app', () => {
-  backendProcess?.kill();
-  app.relaunch();
-  app.exit(0);
+  if (isRestarting) return;
+  isRestarting = true;
+
+  const doRelaunch = () => {
+    app.relaunch();
+    app.exit(0);
+  };
+
+  if (!backendProcess || backendProcess.exitCode !== null) {
+    doRelaunch();
+    return;
+  }
+  const timeout = setTimeout(doRelaunch, 2000);
+  backendProcess.once('exit', () => {
+    clearTimeout(timeout);
+    doRelaunch();
+  });
+  backendProcess.kill();
 });
