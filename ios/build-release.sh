@@ -31,6 +31,24 @@ TEAM_ID="9LRPX62LGN"
 
 VITE_BACKEND_URL="${VITE_BACKEND_URL:-https://vision.th3rdai.com}"
 
+# The hosted backend at vision.th3rdai.com has APP_SECRET configured (see
+# /etc/visionstudio-backend.env on the server, or ask for the current value —
+# it's not committed anywhere). Building against that URL with no
+# VITE_APP_SECRET silently ships an app that gets 403 Forbidden on every
+# request — this has actually happened (rebuilt without the secret, overwrote
+# a working install on a real device). Any other VITE_BACKEND_URL (LAN/dev)
+# is assumed not to need it.
+if [ "$VITE_BACKEND_URL" = "https://vision.th3rdai.com" ] && [ -z "${VITE_APP_SECRET:-}" ]; then
+  echo "==============================================================="
+  echo "WARNING: building against the hosted backend with no"
+  echo "VITE_APP_SECRET set. If that server has APP_SECRET configured"
+  echo "(it does, as of this writing), this build will get 403"
+  echo "Forbidden on every request and silently overwrite a working"
+  echo "install. Set VITE_APP_SECRET=<value> or Ctrl-C now."
+  echo "==============================================================="
+  sleep 5
+fi
+
 echo "==> Building web bundle (VITE_BACKEND_URL=$VITE_BACKEND_URL)"
 cd "$ROOT"
 VITE_BACKEND_URL="$VITE_BACKEND_URL" VITE_APP_SECRET="${VITE_APP_SECRET:-}" npm run build
