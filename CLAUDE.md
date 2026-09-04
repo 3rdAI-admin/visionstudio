@@ -9,7 +9,7 @@ Also ships as a native iOS app via Capacitor (`ios/App/App.xcodeproj`, bundle id
 - **NOT** Python. Do not suggest `pip`, `pytest`, `pydantic`, `FastAPI`, `SQLAlchemy`, or virtual envs.
 - **NOT** an agent framework / LLM application — it is a single-purpose image editor that calls one Nano Banana endpoint + client-side background removal.
 - Frontend: React 18 + TypeScript, Vite 6, Tailwind utility classes (inlined; no `tailwind.config`), `motion/react` for animations, `lucide-react` for icons, `@imgly/background-removal` for client-side background removal.
-- Backend: plain Express in one file (`backend/index.js`), `@google/generative-ai@0.24.1`, `express-rate-limit`. Endpoints: `GET /api/key-status`, `POST /api/generate` (rate-limited), `POST /api/restart` (dev-only, not registered when `HOSTED=true`), plus the implicit `OPTIONS /` CORS preflight.
+- Backend: plain Express in one file (`backend/index.js`), `@google/generative-ai@0.24.1`, `express-rate-limit`. Endpoints: `GET /api/key-status`, `GET /api/models`, `POST /api/generate` (rate-limited), `POST /api/restart` (dev-only, not registered when `HOSTED=true`), plus the implicit `OPTIONS /` CORS preflight.
 - Two `package.json`s: project root (frontend) and `backend/` (backend). They are independent — `npm install` in one does not affect the other.
 
 ## Conventions
@@ -44,8 +44,9 @@ Also ships as a native iOS app via Capacitor (`ios/App/App.xcodeproj`, bundle id
 ## Working with the backend
 
 - Restart picks up `.env` and code changes. There's no nodemon — kill and re-run `node index.js` after edits.
-- The model `gemini-3.1-flash-image` returns `candidates[].content.parts[].inlineData` for image output. The handler in `index.js` walks the parts looking for `inlineData`; if none, it falls back to `response.text()`. Don't change this without testing both paths.
-- `responseModalities: ['Text', 'Image']` in `generationConfig` is required — without it the model may refuse to return images.
+- **Model is user-selectable, not hardcoded**: `/api/generate` accepts an optional `model` field, validated against `MODELS` in `index.js` (currently `gemini-3.1-flash-image` "Nano Banana 2", the default, and `gemini-3-pro-image` "Nano Banana Pro"). `GET /api/models` serves that same list to the frontend's picker (Settings modal, `src/hooks/useModel.ts`, persisted to `localStorage`). Adding/removing a model means updating `MODELS` in `backend/index.js` *and* the `FALLBACK_MODELS` mirror in `src/hooks/useModel.ts`. Both selectable models return `candidates[].content.parts[].inlineData` for image output. The handler in `index.js` walks the parts looking for `inlineData`; if none, it falls back to `response.text()`. Don't change this without testing both paths.
+- `responseModalities: ['Text', 'Image']` in `generationConfig` is required — without it a model may refuse to return images.
+- Nano Banana Pro (`gemini-3-pro-image`) is noticeably more prone than Flash to declining trivial/abstract synthetic prompts (e.g. "a tiny red square as PNG") with a real `502` (no image, no text) rather than a silent no-op — same failure shape the existing no-image/no-text handler already covers. Not a bug in our integration; confirmed by retrying an identical request that then succeeded, and by natural photo-style prompts succeeding reliably. Don't chase this as a backend bug — it's model behavior.
 
 ## When the user says "the app"
 

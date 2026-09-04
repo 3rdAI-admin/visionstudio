@@ -8,11 +8,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Eye, EyeOff, Key, AlertTriangle, ExternalLink, Check, RotateCw } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import type { UseApiKeyReturn } from '../hooks/useApiKey';
+import type { UseModelReturn } from '../hooks/useModel';
 
 export interface ApiKeySettingsProps {
   isOpen: boolean;
   onClose: () => void;
   apiKeyHook: UseApiKeyReturn;
+  modelHook: UseModelReturn;
 }
 
 /**
@@ -27,7 +29,7 @@ export interface ApiKeySettingsProps {
  * updated only this component's own copy, leaving App.tsx's apiKeyHook.apiKey
  * null until the app was fully reloaded.
  */
-export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySettingsProps) {
+export default function ApiKeySettings({ isOpen, onClose, apiKeyHook, modelHook }: ApiKeySettingsProps) {
   const { apiKey, status, isTesting, setApiKey, removeApiKey, testApiKey, validateFormat } =
     apiKeyHook;
   const [inputValue, setInputValue] = useState(apiKey || '');
@@ -155,6 +157,26 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
               <p className="text-[10px] text-white/30 mt-1 font-mono">
                 39 characters starting with "AIzaSy"
               </p>
+            </div>
+
+            {/* Model selection */}
+            <div className="mb-4">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-2">
+                Model
+              </label>
+              <select
+                value={modelHook.selectedModel}
+                onChange={(e) => modelHook.setSelectedModel(e.target.value)}
+                className="w-full px-3 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg
+                         text-base sm:text-sm text-white/80
+                         focus:outline-none focus:border-brand-blue transition-colors"
+              >
+                {modelHook.models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label} — {m.description}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Test result feedback */}

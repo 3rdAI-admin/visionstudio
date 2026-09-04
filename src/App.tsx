@@ -25,6 +25,7 @@ import { Share } from '@capacitor/share';
 
 import { useEditHistory } from './hooks/useEditHistory';
 import { useApiKey } from './hooks/useApiKey';
+import { useModel } from './hooks/useModel';
 import { usePinchZoom } from './hooks/usePinchZoom';
 import { getBackendUrl, getAppSecretHeaders } from './backendUrl';
 import ApiKeySettings from './components/ApiKeySettings';
@@ -150,6 +151,7 @@ export default function App() {
   // API key management
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const apiKeyHook = useApiKey();
+  const modelHook = useModel();
 
   // Pinch-to-zoom/pan on the result preview (not the before/after compare view)
   const pinchZoom = usePinchZoom();
@@ -339,6 +341,7 @@ export default function App() {
         body: JSON.stringify({
           image: { data: sourceImage.data, mimeType: sourceImage.mimeType },
           prompt,
+          model: modelHook.selectedModel,
         }),
       });
       const result = await response.json();
@@ -383,7 +386,7 @@ export default function App() {
           ...getAppSecretHeaders(),
           ...(apiKeyHook.apiKey && { 'X-API-Key': apiKeyHook.apiKey }),
         },
-        body: JSON.stringify({ prompt: genPrompt }),
+        body: JSON.stringify({ prompt: genPrompt, model: modelHook.selectedModel }),
       });
       const result = await response.json();
       if (!response.ok || result.error) {
@@ -1118,6 +1121,7 @@ export default function App() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         apiKeyHook={apiKeyHook}
+        modelHook={modelHook}
       />
     </div>
   );

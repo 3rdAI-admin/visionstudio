@@ -117,7 +117,8 @@ Open <http://localhost:3002>.
   "image": {                       // optional — text-only prompts also work
     "data": "iVBORw0KG...",        // base64-encoded bytes (no data: prefix)
     "mimeType": "image/png"
-  }
+  },
+  "model": "gemini-3.1-flash-image" // optional — see GET /api/models; defaults to Nano Banana 2
 }
 
 // Response — image edit/generation
@@ -129,6 +130,20 @@ Open <http://localhost:3002>.
 // Response — error
 { "error": "human-readable message from Google or local validation" }
 ```
+
+`GET /api/models` returns the server's model allowlist so the frontend's picker never drifts from what `/api/generate` will actually accept:
+
+```jsonc
+{
+  "models": [
+    { "id": "gemini-3.1-flash-image", "label": "Nano Banana 2", "description": "Default — fast, ~$0.067/image" },
+    { "id": "gemini-3-pro-image", "label": "Nano Banana Pro", "description": "Higher quality, ~$0.13/image" }
+  ],
+  "default": "gemini-3.1-flash-image"
+}
+```
+
+A `model` sent to `/api/generate` outside this allowlist is rejected with a `400`, never passed through to the SDK. The allowlist lives in `backend/index.js`'s `MODELS` const, duplicated as a fallback in `src/hooks/useModel.ts` (used only until `/api/models` responds).
 
 CORS is restricted to the frontend's origin (`http://localhost:3002` by default, configurable via `FRONTEND_ORIGIN`), plus Capacitor's native schemes and Electron's no-Origin `file://` requests. In local dev (`HOSTED` unset) it also allows any RFC1918 LAN IP on the same port, so the app works when opened from another device on your network (e.g. a phone at `http://192.168.x.x:3002`) — this LAN allowance does **not** apply when `HOSTED=true`. Body limit is 25 MB so typical UI uploads fit. `/api/generate` is additionally rate-limited (20 req/min per IP) and, on a `HOSTED=true` deployment with `APP_SECRET` configured, requires a matching `X-App-Secret` header — see "Hosted / production backend" below.
 

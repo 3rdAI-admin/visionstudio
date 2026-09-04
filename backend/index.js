@@ -112,6 +112,31 @@ app.get('/api/key-status', (req, res) => {
   res.json({ configured });
 });
 
+// Models the app lets users pick between, trading quality for cost. Server-side
+// allowlist — /api/generate validates any client-supplied `model` against this
+// list rather than passing it straight to the SDK. Keep in sync with
+// src/models.ts's MODELS (duplicated intentionally: the frontend needs this
+// list even when it can't reach the backend yet, e.g. to render the picker
+// before the first request).
+const MODELS = [
+  {
+    id: 'gemini-3.1-flash-image',
+    label: 'Nano Banana 2',
+    description: 'Default — fast, ~$0.067/image',
+  },
+  {
+    id: 'gemini-3-pro-image',
+    label: 'Nano Banana Pro',
+    description: 'Higher quality, ~$0.13/image',
+  },
+];
+const DEFAULT_MODEL = MODELS[0].id;
+const MODEL_IDS = new Set(MODELS.map((m) => m.id));
+
+app.get('/api/models', (req, res) => {
+  res.json({ models: MODELS, default: DEFAULT_MODEL });
+});
+
 // Local-dev-only: lets the Settings UI change ports and respawn the local
 // startup.sh-managed processes. Meaningless (and unsafe, unauthenticated
 // process control) once hosted, so it's not registered when HOSTED=true.
@@ -153,10 +178,14 @@ if (!HOSTED) {
 
 app.post('/api/generate', generateLimiter, async (req, res) => {
   try {
-    const { prompt, image } = req.body || {};
+    const { prompt, image, model: requestedModel } = req.body || {};
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return res.status(400).json({ error: 'prompt (non-empty string) is required' });
     }
+    if (requestedModel !== undefined && !MODEL_IDS.has(requestedModel)) {
+      return res.status(400).json({ error: `Unknown model. Supported: ${[...MODEL_IDS].join(', ')}` });
+    }
+    const modelId = requestedModel || DEFAULT_MODEL;
 
     // Local dev: X-API-Key header or fall back to .env's shared key.
     // Hosted: no fallback — a public server must not let a keyless caller
@@ -182,16 +211,16 @@ app.post('/api/generate', generateLimiter, async (req, res) => {
     // Create GoogleGenerativeAI instance with the selected API key
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // gemini-3.1-flash-image ("Nano Banana 2") supports both text-only and
-    // image+text input, and can return text or images in its response.
-    // responseModalities tells it we want both kinds back so it picks the
-    // appropriate one. Migrated from gemini-2.5-flash-image (legacy "Nano
-    // Banana"), which Google is shutting down 2026-10-02 — also fixes a
-    // real bug where the old model silently no-op'd (returned an unchanged
-    // photorealistic image) on busy/detailed scenes for style-transfer
-    // prompts like Cartoonize; verified fixed on gemini-3.1-flash-image.
+    // Both selectable models support text-only and image+text input, and can
+    // return text or images in their response. responseModalities tells them
+    // we want both kinds back so they pick the appropriate one. Migrated from
+    // gemini-2.5-flash-image (legacy "Nano Banana"), which Google is shutting
+    // down 2026-10-02 — also fixed a real bug where the old model silently
+    // no-op'd (returned an unchanged photorealistic image) on busy/detailed
+    // scenes for style-transfer prompts like Cartoonize; verified fixed on
+    // gemini-3.1-flash-image.
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.1-flash-image',
+      model: modelId,
       generationConfig: { responseModalities: ['Text', 'Image'] },
     });
 
