@@ -96,7 +96,7 @@
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "electron": "^33.4.11",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.15.3",
     "jsdom": "^29.1.1",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.1.14",
