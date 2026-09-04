@@ -2,9 +2,9 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-03 (migrated the backend to `gemini-3.1-flash-image` — fixes the Cartoonize busy-scene bug below and gets ahead of the legacy model's 2026-10-02 shutdown), by session `014U8Ba4pj7vYkcxTSmGRb2Z`.
+Last updated: 2026-09-03 (deployed the `gemini-3.1-flash-image` migration to all four targets — local dev, hosted backend, iOS, macOS), by session `014U8Ba4pj7vYkcxTSmGRb2Z`.
 
-## ✅ Migrated backend model to `gemini-3.1-flash-image` ("Nano Banana 2") — FIXED 2026-09-03, also fixes Cartoonize on busy scenes
+## ✅ Migrated to `gemini-3.1-flash-image` ("Nano Banana 2") and deployed everywhere — FIXED 2026-09-03, also fixes Cartoonize on busy scenes
 
 Two independent reasons converged: (1) the Cartoonize busy-scene bug below turned out to be a real ceiling in `gemini-2.5-flash-image`, not fixable from prompt engineering (see the investigation below, preserved for the record); (2) `gemini-2.5-flash-image` itself is being shut down by Google on **2026-10-02** — confirmed via Google's own docs (`ai.google.dev/gemini-api/docs/models`, `ai.google.dev/gemini-api/docs/deprecations`) — so migrating off it was required regardless.
 
@@ -12,9 +12,13 @@ Two independent reasons converged: (1) the Cartoonize busy-scene bug below turne
 
 **What changed**: `backend/index.js`'s `model:` string only — the old SDK (`@google/generative-ai@0.24.1`) works with the new model ID with zero other code changes (confirmed via a direct test call before touching the real code path). Updated all references to the old model ID/name across `README.md`, `CLAUDE.md`, and `src/App.tsx`'s engine label.
 
-**Verified**: re-ran the exact same busy market-scene test that failed 6/6 times on `gemini-2.5-flash-image` (see investigation below) — cartoonized correctly on the first try on `gemini-3.1-flash-image`, no prompt changes needed.
+**Verified on all four deployment targets, not just committed code:**
+- **Local dev backend**: restarted, confirmed via a real `/api/generate` call — the exact busy market-scene test that failed 6/6 times on the old model cartoonized correctly on the first try, no prompt changes.
+- **Hosted backend** (`vision.th3rdai.com`, no git checkout there — plain-file deploy): copied the updated `backend/index.js` over SCP (server was also missing the earlier LAN-CORS and Nano-Banana-Key-wording fixes, so it picked those up too), backed up the old file to `/root/index.js.bak-<timestamp>`, `systemctl restart visionstudio-backend`. Confirmed via a real end-to-end `/api/generate` call through the live HTTPS URL with `X-App-Secret` + a caller-supplied key.
+- **iOS**: rebuilt via `ios/build-release.sh` (build number bumped 4→5), installed + launched on the real device via `devicectl`.
+- **macOS**: rebuilt via `npm run electron:build`, installed to `/Applications/VisionStudio.app`, launched and confirmed running.
 
-**If a future session touches the model string again**: check `ai.google.dev/gemini-api/docs/deprecations` first for any newer shutdown notice — Google's Nano Banana lineup has moved fast (2.5 → 3 Pro / 3.1 / 3.1 Lite all within the same year).
+**If a future session touches the model string again**: check `ai.google.dev/gemini-api/docs/deprecations` first for any newer shutdown notice — Google's Nano Banana lineup has moved fast (2.5 → 3 Pro / 3.1 / 3.1 Lite all within the same year). Also note the hosted backend has **no git repo** — `/opt/visionstudio-backend/index.js` is deployed by copying the file directly; it can silently drift behind the repo (as it had, by 3 unrelated fixes, before this session's deploy) if nobody's tracking that.
 
 <details>
 <summary>Original investigation (2026-09-03, before the migration) — kept for reference</summary>
