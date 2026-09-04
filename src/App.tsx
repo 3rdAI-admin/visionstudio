@@ -844,6 +844,11 @@ export default function App() {
                           prompt:
                             'Convert this entire image into a clean 2D cartoon illustration style — redraw the background with the same flat cartoon shading and bold outlines as the subject, not a photorealistic background',
                         },
+                        {
+                          label: 'Ghibli',
+                          prompt:
+                            'Convert this entire image into a hand-painted Studio Ghibli anime style — redraw both the subject and the background with soft painterly textures, warm natural lighting, and gentle linework, not a photorealistic background',
+                        },
                       ].map((hint, i) => {
                         const isSelected = prompt === hint.prompt;
                         return (
