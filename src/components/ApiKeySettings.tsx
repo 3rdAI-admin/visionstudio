@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Eye, EyeOff, Key, AlertTriangle, ExternalLink, Check } from 'lucide-react';
+import { X, Eye, EyeOff, Key, AlertTriangle, ExternalLink, Check, RotateCw } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import type { UseApiKeyReturn } from '../hooks/useApiKey';
 
 export interface ApiKeySettingsProps {
@@ -64,6 +65,17 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
     removeApiKey();
     setInputValue('');
     setTestResult(null);
+  };
+
+  const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
+  const isIOS = Capacitor.getPlatform() === 'ios';
+
+  const handleRestart = () => {
+    if (isElectron) {
+      window.electronAPI!.restartApp();
+    } else if (isIOS) {
+      window.location.reload();
+    }
   };
 
   return (
@@ -187,6 +199,18 @@ export default function ApiKeySettings({ isOpen, onClose, apiKeyHook }: ApiKeySe
             >
               Remove Nano Banana API Key
             </button>
+
+            {(isElectron || isIOS) && (
+              <button
+                onClick={handleRestart}
+                className="w-full px-4 py-2 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-brand-blue text-white text-[10px] font-bold uppercase tracking-widest rounded-lg
+                         mb-4 transition-colors flex items-center justify-center gap-2
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+                {isElectron ? 'Restart App' : 'Reload App'}
+              </button>
+            )}
 
             {/* Link to get API key */}
             <a

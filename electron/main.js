@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const { app, BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { fork } = require('child_process');
 const { autoUpdater } = require('electron-updater');
@@ -52,6 +52,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
@@ -121,4 +122,15 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   backendProcess?.kill();
+});
+
+// Renderer-triggered full app restart (Settings UI "Restart App" button) —
+// relaunch() schedules a new instance on exit. app.exit() terminates
+// immediately WITHOUT firing before-quit/will-quit (unlike app.quit()), so
+// the forked backend must be killed explicitly here or it's orphaned —
+// confirmed via a real restart that leaked the old backend process.
+ipcMain.on('restart-app', () => {
+  backendProcess?.kill();
+  app.relaunch();
+  app.exit(0);
 });
