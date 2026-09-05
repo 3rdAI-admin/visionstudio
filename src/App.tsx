@@ -488,7 +488,7 @@ export default function App() {
       >
         <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-2">
           <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
-            <img src={logoEye} className="w-6 h-6 object-contain shrink-0" alt="Th3rdAI" />
+            <img src={logoEye} className="w-12 h-12 object-contain shrink-0" alt="Th3rdAI" />
             <span className="hidden sm:inline text-[10px] font-medium tracking-[0.2em] uppercase opacity-50 truncate">
               Th3rdAI Vision Studio — v2.2
             </span>
@@ -608,7 +608,7 @@ export default function App() {
             >
               <div className="mb-8 sm:mb-12">
                 <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                  <img src={logoEye} className="w-9 h-9 sm:w-12 sm:h-12 object-contain" alt="" />
+                  <img src={logoEye} className="w-[4.5rem] h-[4.5rem] sm:w-24 sm:h-24 object-contain" alt="" />
                   <span className="text-3xl sm:text-5xl font-bold uppercase tracking-tight">
                     <span className="text-white">Th3rd</span>
                     <span className="text-brand-gradient">AI</span>
