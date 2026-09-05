@@ -2,7 +2,19 @@
 
 Coordination doc for multiple concurrent Claude Code sessions working this repo. **Read this before making changes, and update the relevant section when you finish a unit of work** — this repo has had unintentional overwrites and stale-state confusion from sessions working blind to each other.
 
-Last updated: 2026-09-05 (iOS build bump + VITE_APP_SECRET guard, closed the last Dependabot finding, resolved both secret-scanning alerts, added ARCHITECTURE.md), by session `01EdocUWoE28FcdqfGSBEvfr`.
+Last updated: 2026-09-05 (backfilled the missing model-picker entry below), by session `012G4Wd3wSmBMBSDnFRg1HWn`.
+
+## 🎛️ Model picker: switch between Nano Banana 2 and Nano Banana Pro — 2026-09-04
+
+Backfilled here 2026-09-05 — this shipped and was fully verified across all four deployment targets the day before, but never got a HANDOFF.md entry (only caught during an Archon board sync, which had the same gap).
+
+Lets users trade quality for cost per-request instead of the model being hardcoded to `gemini-3.1-flash-image`. Commit `ae1809f`, direct to `main`, no PR.
+
+- **Backend**: new `MODELS` allowlist + `GET /api/models` in `backend/index.js`. `/api/generate` accepts an optional `model` field, validated server-side against the allowlist (`400` on anything else — never passed straight to the SDK), defaults to Nano Banana 2 (`gemini-3.1-flash-image`). Second option: Nano Banana Pro (`gemini-3-pro-image`), ~$0.13/image vs. Flash's ~$0.067.
+- **Frontend**: new `src/hooks/useModel.ts` (fetches the allowlist from `/api/models`, falls back to a local copy if unreachable, persists the selection to `localStorage`). Dropdown added to `ApiKeySettings.tsx`'s Settings modal, showing each model's label + cost/quality blurb. Both `handleEdit`/`handleGenerate` in `App.tsx` send `model` with every request.
+- **Verified end-to-end against the real backend, not just `tsc`/unit tests**: `/api/models`, default-model generation, explicit Pro-model generation, and invalid-model rejection all confirmed with real HTTP calls and real images back. Noted along the way: Nano Banana Pro is noticeably more prone than Flash to declining trivial/abstract synthetic prompts (e.g. "a tiny red square as PNG") with a real `502` (no image, no text) rather than a silent no-op — same failure shape the existing no-image/no-text handler already covers, confirmed as real model behavior (not a bug) by retrying an identical request that then succeeded, and by natural photo-style prompts succeeding reliably every time.
+- **Shipped to all four targets**: local dev backend/frontend; hosted backend (`vision.th3rdai.com` — was still running stale pre-feature code with no `/api/models` at all, caught during this backfill's verification pass, redeployed via the documented SCP+backup+`systemctl restart` process, confirmed live); macOS Electron app (rebuilt, installed to `/Applications/VisionStudio.app`, confirmed its forked backend serves the new allowlist); iOS app (rebuilt as build 8, then build 9 after a `VITE_APP_SECRET`-omission regression was caught and fixed the same day — see the "Forbidden" incident in `CLAUDE.md`'s "Things that have broken before" table).
+- **Archon**: added a `done` task for this (`95ab06eb`) — it had no board representation either, same gap.
 
 ## 🔒 Closed the last Dependabot finding + resolved both secret-scanning alerts — 2026-09-04/05
 
