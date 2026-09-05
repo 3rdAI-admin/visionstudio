@@ -51,7 +51,6 @@
     "mac": {
       "target": [
         "dmg",
-        "pkg",
         "zip"
       ],
       "category": "public.app-category.graphics-design",
